@@ -4,24 +4,21 @@ using InterviewSim.BLL.Interfaces;
 using InterviewSim.BLL.Implementations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// הגדרת DbContext עם MySQL
 builder.Services.AddDbContext<InterviewSimContext>(options =>
     options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
-        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))));
-
-// Add Repositories to the container for Dependency Injection (DI)
+        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection")),
+        mySqlOptions => mySqlOptions.EnableRetryOnFailure()));
+// הוספת השירותים לשירותי ה-DI
+builder.Services.AddScoped<IUserRepository, UserRepository>();  // נוודא שה-Repository רשום
+builder.Services.AddScoped<IAuthService, AuthService>();         // נוודא שה-AuthService רשום
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IInterviewService, InterviewService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-
-builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IInterviewRepository, InterviewRepository>();
 builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
 builder.Services.AddScoped<IAnswerRepository, AnswerRepository>();
+
 
 // הוספת Swagger (OpenAPI) 
 builder.Services.AddSwaggerGen(c =>
@@ -36,6 +33,18 @@ var app = builder.Build();
 var scope = app.Services.CreateScope();
 var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 Console.WriteLine(userRepository != null ? "UserRepository registered!" : "UserRepository not registered!");
+
+// טיפול בשגיאות חיבור למסד נתונים
+try
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<InterviewSimContext>();
+    dbContext.Database.EnsureCreated(); // זה יוודא שהמסד נתונים קיים
+    Console.WriteLine("Database connection is successful!");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Error connecting to the database: {ex.Message}");
+}
 
 // קונפיגורציה של ה-HTTP pipeline
 if (app.Environment.IsDevelopment())

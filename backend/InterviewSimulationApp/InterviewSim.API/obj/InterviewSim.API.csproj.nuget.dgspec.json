@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.API\\InterviewSim.API.csproj": {}
+    "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.API\\InterviewSim.API.csproj": {}
   },
   "projects": {
-    "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.API\\InterviewSim.API.csproj": {
+    "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.API\\InterviewSim.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.API\\InterviewSim.API.csproj",
+        "projectUniqueName": "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.API\\InterviewSim.API.csproj",
         "projectName": "InterviewSim.API",
-        "projectPath": "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.API\\InterviewSim.API.csproj",
+        "projectPath": "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.API\\InterviewSim.API.csproj",
         "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.API\\obj\\",
+        "outputPath": "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.API\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -33,14 +33,14 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.BLL\\InterviewSim.BLL.csproj": {
-                "projectPath": "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.BLL\\InterviewSim.BLL.csproj"
+              "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.BLL\\InterviewSim.BLL.csproj": {
+                "projectPath": "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.BLL\\InterviewSim.BLL.csproj"
               },
-              "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.DAL\\InterviewSim.DAL.csproj": {
-                "projectPath": "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.DAL\\InterviewSim.DAL.csproj"
+              "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.DAL\\InterviewSim.DAL.csproj": {
+                "projectPath": "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.DAL\\InterviewSim.DAL.csproj"
               },
-              "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.Shared\\InterviewSim.Shared.csproj": {
-                "projectPath": "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.Shared\\InterviewSim.Shared.csproj"
+              "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.Shared\\InterviewSim.Shared.csproj": {
+                "projectPath": "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.Shared\\InterviewSim.Shared.csproj"
               }
             }
           }
@@ -137,14 +137,14 @@
         }
       }
     },
-    "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.BLL\\InterviewSim.BLL.csproj": {
+    "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.BLL\\InterviewSim.BLL.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.BLL\\InterviewSim.BLL.csproj",
+        "projectUniqueName": "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.BLL\\InterviewSim.BLL.csproj",
         "projectName": "InterviewSim.BLL",
-        "projectPath": "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.BLL\\InterviewSim.BLL.csproj",
+        "projectPath": "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.BLL\\InterviewSim.BLL.csproj",
         "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.BLL\\obj\\",
+        "outputPath": "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.BLL\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -166,11 +166,11 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.DAL\\InterviewSim.DAL.csproj": {
-                "projectPath": "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.DAL\\InterviewSim.DAL.csproj"
+              "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.DAL\\InterviewSim.DAL.csproj": {
+                "projectPath": "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.DAL\\InterviewSim.DAL.csproj"
               },
-              "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.Shared\\InterviewSim.Shared.csproj": {
-                "projectPath": "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.Shared\\InterviewSim.Shared.csproj"
+              "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.Shared\\InterviewSim.Shared.csproj": {
+                "projectPath": "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.Shared\\InterviewSim.Shared.csproj"
               }
             }
           }
@@ -197,11 +197,11 @@
             },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
-              "version": "[8.0.13, )"
+              "version": "[9.0.2, )"
             },
             "Microsoft.EntityFrameworkCore.Relational": {
               "target": "Package",
-              "version": "[8.0.13, )"
+              "version": "[9.0.2, )"
             }
           },
           "imports": [
@@ -224,14 +224,14 @@
         }
       }
     },
-    "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.DAL\\InterviewSim.DAL.csproj": {
+    "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.DAL\\InterviewSim.DAL.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.DAL\\InterviewSim.DAL.csproj",
+        "projectUniqueName": "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.DAL\\InterviewSim.DAL.csproj",
         "projectName": "InterviewSim.DAL",
-        "projectPath": "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.DAL\\InterviewSim.DAL.csproj",
+        "projectPath": "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.DAL\\InterviewSim.DAL.csproj",
         "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.DAL\\obj\\",
+        "outputPath": "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.DAL\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -253,8 +253,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.Shared\\InterviewSim.Shared.csproj": {
-                "projectPath": "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.Shared\\InterviewSim.Shared.csproj"
+              "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.Shared\\InterviewSim.Shared.csproj": {
+                "projectPath": "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.Shared\\InterviewSim.Shared.csproj"
               }
             }
           }
@@ -289,7 +289,7 @@
             },
             "Pomelo.EntityFrameworkCore.MySql": {
               "target": "Package",
-              "version": "[9.0.0, )"
+              "version": "[9.0.0-preview.3.efcore.9.0.0, )"
             }
           },
           "imports": [
@@ -312,14 +312,14 @@
         }
       }
     },
-    "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.Shared\\InterviewSim.Shared.csproj": {
+    "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.Shared\\InterviewSim.Shared.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.Shared\\InterviewSim.Shared.csproj",
+        "projectUniqueName": "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.Shared\\InterviewSim.Shared.csproj",
         "projectName": "InterviewSim.Shared",
-        "projectPath": "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.Shared\\InterviewSim.Shared.csproj",
+        "projectPath": "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.Shared\\InterviewSim.Shared.csproj",
         "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "D:\\Users\\User\\Desktop\\Interview-Simulation-App\\backend\\InterviewSimulationApp\\InterviewSim.Shared\\obj\\",
+        "outputPath": "D:\\Users\\User\\Desktop\\jm_dkWcXGCfakm3QqU\\InterviewSimulationApp\\InterviewSim.Shared\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

@@ -7,13 +7,12 @@ namespace InterviewSim.BLL.Implementations
 {
     public class AuthService : IAuthService
     {
-        private readonly UserRepository _userRepository;
+        private readonly IUserRepository _userRepository;  // שינוי מ- UserRepository ל- IUserRepository
 
-        public AuthService(UserRepository userRepository)
+        public AuthService(IUserRepository userRepository)  // גם כאן
         {
             _userRepository = userRepository;
         }
-
         public async Task<string> RegisterUserAsync(string username, string password, IFormFile resume)
         {
             // הלוגיקה של רישום משתמש (הוספת קובץ קורות חיים וכו')
