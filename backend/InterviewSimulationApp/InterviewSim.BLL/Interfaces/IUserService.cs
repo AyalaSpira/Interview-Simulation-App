@@ -1,12 +1,17 @@
 using InterviewSim.Shared.DTOs;
 using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace InterviewSim.BLL.Interfaces
 {
     public interface IUserService
     {
-        Task<UserDTO> GetUserDetailsAsync(int userId); // קבלת פרטי משתמש
-        Task UpdateUserResumeAsync(int userId, IFormFile resume); // עדכון קורות חיים
+   
+        Task UpdateUserAsync(UserDTO userDto);
+        Task<List<UserDTO>> GetAllUsersAsync();
+        Task<UserDTO> GetUserByIdAsync(string password, string name);
+        Task UpdateUserResumeAsync(string password, string name, IFormFile resume);
+
     }
 }

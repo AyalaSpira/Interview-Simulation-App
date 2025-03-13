@@ -2,6 +2,7 @@ using InterviewSim.BLL.Interfaces;
 using InterviewSim.Shared.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using Amazon.Util.Internal;
 
 namespace InterviewSim.API.Controllers
 {
@@ -15,14 +16,20 @@ namespace InterviewSim.API.Controllers
         {
             _authService = authService;
         }
-
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromForm] UserDTO userDto)  // שינוי מ-FromBody ל-FromForm
+        public async Task<IActionResult> Register([FromForm] string username, [FromForm] string password, [FromForm] IFormFile resume)
         {
-            // אם ה-DTO כולל קובץ קורות חיים, הוא יישלח
-            var result = await _authService.RegisterUserAsync(userDto.Username, userDto.Password, userDto.Resume);
+            if (resume == null)
+            {
+                return BadRequest("Resume file is required.");
+            }
+
+            // קריאה לפונקציה להירשם עם קובץ קורות חיים
+            var result = await _authService.RegisterUserAsync(username, password, resume);
+
             return Ok(result);
         }
+
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserDTO userDto)

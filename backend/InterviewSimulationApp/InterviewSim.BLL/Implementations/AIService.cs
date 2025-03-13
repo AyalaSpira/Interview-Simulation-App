@@ -35,8 +35,21 @@ namespace InterviewSim.BLL.Implementations
             var personalPrompt = $"Generate personal interview questions for a {category} job.";
             var technicalPrompt = $"Generate technical interview questions for a {category} job.";
 
-            var personalQuestions = await GenerateQuestionsFromAI(personalPrompt);
-            var technicalQuestions = await GenerateQuestionsFromAI(technicalPrompt);
+            var personalQuestions = await GenerateQuestionsFromAI(personalPrompt) ?? new List<string>();
+            var technicalQuestions = await GenerateQuestionsFromAI(technicalPrompt) ?? new List<string>();
+
+            if (!personalQuestions.Any() && !technicalQuestions.Any())
+            {
+                // שאלות ברירת מחדל למקרה שהבינה המלאכותית לא מחזירה כלום
+                return new List<string>
+        {
+            "ספר לי על עצמך.",
+            "מהן החוזקות שלך?",
+            "איך אתה מתמודד עם לחץ?",
+            "מהי השאיפה שלך בקריירה?",
+            "תן לי דוגמה לאתגר שהתמודדת איתו בעבודה קודמת."
+        };
+            }
 
             var questions = new List<string>();
             questions.AddRange(personalQuestions);
@@ -44,6 +57,7 @@ namespace InterviewSim.BLL.Implementations
 
             return questions;
         }
+
 
         public async Task<string> AnalyzeInterviewAsync(List<string> answers, List<string> questions)
         {

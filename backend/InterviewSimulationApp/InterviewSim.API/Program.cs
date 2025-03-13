@@ -5,6 +5,7 @@ using InterviewSim.DAL;
 using InterviewSim.DAL.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -30,7 +31,13 @@ builder.Services.AddDbContext<InterviewSimContext>(options =>
 // === הוספת השירותים למערכת ה-DI ===
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUserService>(serviceProvider =>
+{
+    var bucketName = builder.Configuration["AWS:BucketName"]; // קבלת ה-bucketName מתוך קובץ הקונפיגורציה
+    var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
+    var s3Service = serviceProvider.GetRequiredService<S3Service>();
+    return new UserService(userRepository, s3Service, bucketName);
+});
 builder.Services.AddScoped<IInterviewService, InterviewService>();
 builder.Services.AddScoped<IInterviewRepository, InterviewRepository>();
 builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
@@ -123,13 +130,8 @@ using (var scope = app.Services.CreateScope())  // שמים את זה אחרי builder.Build
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "InterviewSim API v1");
-        c.RoutePrefix = string.Empty;  // הגדרת Swagger להיפתח כשפותחים את ה-URL הראשי
-    });
+    app.UseSwaggerUI();
 }
-
 app.UseCors("AllowAll");
 
 app.UseHttpsRedirection();

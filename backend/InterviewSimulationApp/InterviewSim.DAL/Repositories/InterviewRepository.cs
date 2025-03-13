@@ -74,9 +74,21 @@ namespace InterviewSim.DAL.Repositories
             var existingInterview = _interviews.FirstOrDefault(i => i.InterviewId == interview.InterviewId);
             if (existingInterview != null)
             {
-                existingInterview = interview; // עדכון הראיון
+                existingInterview.Status = interview.Status;
+                existingInterview.Answers = interview.Answers;  // שמירת התשובות
             }
             await Task.CompletedTask;
         }
+        public async Task SaveInterviewReportAsync(int interviewId, string report)
+        {
+            var interview = _interviews.FirstOrDefault(i => i.InterviewId == interviewId);
+            if (interview != null)
+            {
+                interview.Status = "Completed";
+                interview.Answers.Add($"AI Report: {report}");  // שומרים את הדוח כתשובה אחרונה
+            }
+            await Task.CompletedTask;
+        }
+
     }
 }

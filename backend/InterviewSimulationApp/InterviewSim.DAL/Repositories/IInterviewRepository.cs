@@ -9,5 +9,8 @@ namespace InterviewSim.DAL.Repositories
         Task<string> GetResumeContentAsync(int userId);
         Task<List<string>> GetInterviewQuestionsAsync(int interviewId);
         Task<Interview> StartInterviewAsync(int userId, List<string> questions);
+
+        Task SaveInterviewReportAsync(int interviewId, string report);
+
     }
 }

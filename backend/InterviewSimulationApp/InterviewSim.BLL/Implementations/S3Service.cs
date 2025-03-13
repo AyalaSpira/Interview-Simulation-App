@@ -1,40 +1,66 @@
 ﻿using Amazon.S3;
-using Amazon.S3.Model;
-using Microsoft.Extensions.Configuration;
+using Amazon.S3.Transfer;
 using Microsoft.AspNetCore.Http;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 
 public class S3Service
 {
     private readonly IAmazonS3 _s3Client;
-    private readonly string _bucketName;
 
-    public S3Service(IConfiguration configuration)
+    public S3Service(IAmazonS3 s3Client)
     {
-        _s3Client = new AmazonS3Client(configuration["AWS:AccessKey"], configuration["AWS:SecretKey"], Amazon.RegionEndpoint.USEast1);
-        _bucketName = configuration["AWS:BucketName"];
+        _s3Client = s3Client;
     }
 
-    public async Task<string> UploadFileAsync(IFormFile file)
+    // העלאת קובץ ל-S3 עם פרטי Bucket
+    public async Task<string> UploadFileAsync(IFormFile file, string bucketName)
     {
-        if (file.ContentType != "application/pdf")
+        try
         {
-            throw new Exception("Only PDF files are allowed.");
-        }
+            // יצירת שם קובץ ייחודי על בסיס GUID וההרחבה של הקובץ
+            var fileKey = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
 
-        using (var stream = file.OpenReadStream())
-        {
-            var putRequest = new PutObjectRequest
+            using (var stream = file.OpenReadStream())
             {
-                BucketName = _bucketName,
-                Key = file.FileName,
-                InputStream = stream,
-                ContentType = file.ContentType
-            };
+                var uploadRequest = new TransferUtilityUploadRequest
+                {
+                    InputStream = stream,
+                    Key = fileKey,
+                    BucketName = bucketName,
+                    ContentType = file.ContentType
+                };
 
-            var response = await _s3Client.PutObjectAsync(putRequest);
-            return response.HttpStatusCode == System.Net.HttpStatusCode.OK ? $"https://{_bucketName}.s3.amazonaws.com/{file.FileName}" : null;
+                // יצירת אובייקט להעברת הקובץ ל-S3
+                var fileTransferUtility = new TransferUtility(_s3Client);
+                await fileTransferUtility.UploadAsync(uploadRequest); // העלאת הקובץ ל-S3
+            }
+
+            // מחזירים את ה-URL של הקובץ שהועלה ל-S3
+            return $"https://{_s3Client.Config.RegionEndpoint.SystemName}.amazonaws.com/{bucketName}/{fileKey}";
         }
+        catch (AmazonS3Exception amazonS3Exception)
+        {
+            // טיפול בשגיאות S3
+            throw new Exception("There was an error uploading the file to S3: " + amazonS3Exception.Message, amazonS3Exception);
+        }
+        catch (Exception ex)
+        {
+            // טיפול בשגיאות כלליות
+            throw new Exception("An unexpected error occurred while uploading the file.", ex);
+        }
+    }
+
+    // מחיקת קובץ מ-S3
+    public async Task DeleteFileAsync(string fileKey, string bucketName)
+    {
+        var deleteRequest = new Amazon.S3.Model.DeleteObjectRequest
+        {
+            BucketName = bucketName,
+            Key = fileKey
+        };
+
+        await _s3Client.DeleteObjectAsync(deleteRequest);
     }
 }

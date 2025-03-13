@@ -3,6 +3,7 @@ using iTextSharp.text.pdf;
 using iTextSharp.text.pdf.parser;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace InterviewSim.API.Controllers
@@ -26,7 +27,7 @@ namespace InterviewSim.API.Controllers
         public async Task<IActionResult> UploadResume([FromForm] IFormFile resume)
         {
             // 1. העלה את קובץ ה-PDF ל-S3
-            var resumeUrl = await _s3Service.UploadFileAsync(resume);
+            var resumeUrl = await _s3Service.UploadFileAsync(resume, "ayala-spira-testpnoren");
 
             // 2. קריאת תוכן הרזומה
             var resumeContent = await ReadResumeContentAsync(resume);
@@ -40,16 +41,23 @@ namespace InterviewSim.API.Controllers
 
         private async Task<string> ReadResumeContentAsync(IFormFile resume)
         {
-            // קריאת תוכן ה-PDF
-            using (var stream = resume.OpenReadStream())
+            try
             {
-                var reader = new PdfReader(stream);
-                var content = string.Empty;
-                for (int i = 1; i <= reader.NumberOfPages; i++)
+                using (var stream = resume.OpenReadStream())
+                using (var reader = new PdfReader(stream))
                 {
-                    content += PdfTextExtractor.GetTextFromPage(reader, i);
+                    var content = new StringBuilder();
+                    for (int i = 1; i <= reader.NumberOfPages; i++)
+                    {
+                        content.Append(PdfTextExtractor.GetTextFromPage(reader, i));
+                    }
+                    return content.ToString();
                 }
-                return content;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reading PDF: {ex.Message}");
+                return string.Empty;
             }
         }
     }

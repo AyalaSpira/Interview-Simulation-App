@@ -1,73 +1,83 @@
 using InterviewSim.BLL.Interfaces;
-using InterviewSim.Shared.DTOs;
 using InterviewSim.DAL.Repositories;
+using InterviewSim.Shared.DTOs;
 using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Amazon.S3; // הוספת AWS S3
-using Amazon.S3.Transfer;
 
-namespace InterviewSim.BLL.Implementations
+public class UserService : IUserService
 {
-    public class UserService : IUserService
+    private readonly IUserRepository _userRepository;
+    private readonly S3Service _s3Service;
+    private readonly string _bucketName; // שם ה-bucket
+
+    public UserService(IUserRepository userRepository, S3Service s3Service, string bucketName)
     {
-        private readonly IUserRepository _userRepository;
-        private readonly IAIService _aiService;
-        private readonly IAmazonS3 _s3Client; // הוספנו את שירות ה-S3 (אם אתה משתמש ב-AWS)
+        _userRepository = userRepository;
+        _s3Service = s3Service;
+        _bucketName = bucketName; // העברת שם ה-bucket
+    }
 
-        public UserService(IUserRepository userRepository, IAIService aiService, IAmazonS3 s3Client)
+    // עדכון קורות חיים
+    public async Task UpdateUserResumeAsync(string password, string username, IFormFile resume)
+    {
+        // שיניתי את הקריאה ל-GetUserByUsernameAndPassword כך שהיא תעשה חיפוש נכון
+        var user = await _userRepository.GetUserByIdAsync(username, password);
+
+        if (user != null && resume != null)
         {
-            _userRepository = userRepository;
-            _aiService = aiService;
-            _s3Client = s3Client; // העברת ה-S3 ל-UserService
-        }
-
-        public async Task<UserDTO> GetUserDetailsAsync(int userId)
-        {
-            var user = await _userRepository.GetByIdAsync(userId);
-            return new UserDTO { Username = user.Username, Password = user.Password };
-        }
-
-
-        public async Task UpdateUserResumeAsync(int userId, IFormFile resume)
-        {
-            var user = await _userRepository.GetByIdAsync(userId);
-            if (resume != null)
+            // מחיקה של קובץ קורות חיים ישן אם קיים
+            if (!string.IsNullOrEmpty(user.ResumePath))
             {
-                // העלאת קובץ קורות חיים ל-S3 ושמירת ה-URL
-                var resumeUrl = await UploadFileToS3Async(resume);
-                user.Resume = resumeUrl;
-                await _userRepository.SaveAsync(user);
-            }
-        }
-
-        public async Task<List<string>> GenerateQuestionsFromResumeAsync(string resumeText)
-        {
-            // יצירת שאלות על בסיס קורות החיים
-            return await _aiService.GenerateQuestionsAsync(resumeText);
-        }
-
-        // פונקציה להעלאת קובץ ל-S3
-        private async Task<string> UploadFileToS3Async(IFormFile file)
-        {
-            var fileTransferUtility = new TransferUtility(_s3Client);
-
-            var fileKey = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-
-            using (var stream = file.OpenReadStream())
-            {
-                var uploadRequest = new TransferUtilityUploadRequest
-                {
-                    InputStream = stream,
-                    Key = fileKey,
-                    BucketName = "ayala-spira-testpnoren",
-                    ContentType = file.ContentType
-                };
-
-                await fileTransferUtility.UploadAsync(uploadRequest);
+                var oldFileKey = user.ResumePath.Substring(user.ResumePath.LastIndexOf("/") + 1); // שולף את שם הקובץ מתוך ה-URL
+                await _s3Service.DeleteFileAsync(oldFileKey, _bucketName);
             }
 
-            return $"https://{_s3Client.Config.RegionEndpoint.SystemName}.amazonaws.com/ayala-spira-testpnoren/{fileKey}";
+            // העלאת קובץ קורות חיים חדש
+            var resumeUrl = await _s3Service.UploadFileAsync(resume, _bucketName);
+            user.ResumePath = resumeUrl;
+            await _userRepository.SaveAsync(user);
+        }
+    }
+
+    // קבלת משתמש לפי שם וסיסמה
+    public async Task<UserDTO> GetUserByIdAsync(string password, string username)
+    {
+        var user = await _userRepository.GetUserByIdAsync(username, password);
+
+        if (user == null)
+        {
+            throw new UnauthorizedAccessException("User not found.");
+        }
+
+        return new UserDTO { Username = user.Username, Password = password, ResumePath = user.ResumePath };
+    }
+
+    // קבלת כל המשתמשים
+    public async Task<List<UserDTO>> GetAllUsersAsync()
+    {
+        var users = await _userRepository.GetAllUsersAsync();
+        var userDtos = new List<UserDTO>();
+
+        foreach (var user in users)
+        {
+            userDtos.Add(new UserDTO { Username = user.Username, Password = user.Password, ResumePath = user.ResumePath });
+        }
+
+        return userDtos;
+    }
+
+    // עדכון פרטי משתמש
+    public async Task UpdateUserAsync(UserDTO userDto)
+    {
+        var user = await _userRepository.GetUserByIdAsync(userDto.Username, userDto.Password);
+
+        if (user != null)
+        {
+            user.Username = userDto.Username;
+            user.ResumePath = userDto.ResumePath;
+            await _userRepository.SaveAsync(user);
         }
     }
 }

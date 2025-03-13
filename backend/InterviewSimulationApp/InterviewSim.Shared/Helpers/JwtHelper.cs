@@ -7,7 +7,7 @@ namespace InterviewSim.Shared.Helpers
 {
     public static class JwtHelper
     {
-        private const string SecretKey = "MySuperSecretKeyForJWT";
+        private const string SecretKey = "a9n$1!sd@kfo32LKkdfj20948dkDfL9s1";
 
         public static string GenerateJwtToken(int userId, string username)
         {
@@ -17,9 +17,9 @@ namespace InterviewSim.Shared.Helpers
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                    new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-                    new Claim(ClaimTypes.Name, username)
-                }),
+                        new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+                        new Claim(ClaimTypes.Name, username)
+                    }),
                 Expires = DateTime.UtcNow.AddHours(2),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
@@ -27,5 +27,7 @@ namespace InterviewSim.Shared.Helpers
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
+           // return username;
+        }
     }
-}
+
