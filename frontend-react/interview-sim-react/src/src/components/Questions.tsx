@@ -11,7 +11,7 @@ const Questions: React.FC = () => {
 
   return (
     <div>
-      <h2>Questions</h2>
+      <h2>Interview Questions</h2>
       <ul>
         {questions.map((question, index) => (
           <li key={index}>{question}</li>
