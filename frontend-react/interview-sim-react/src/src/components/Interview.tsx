@@ -66,7 +66,7 @@ const Interview: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         if (data.questions && data.questions.length > 0) {
-          setQuestions(data.questions);
+          setQuestions(data.questions.slice(0, 5));  // לקחת רק 5 שאלות
           setCurrentQuestionIndex(0);
           setTimer(data.questions[0].timer);  // הגדרת זמן השאלה הראשונה
         } else {
@@ -79,6 +79,7 @@ const Interview: React.FC = () => {
       alert("There was an error starting the interview.");
     }
   };
+
 
   const handleNextQuestion = () => {
     if (currentQuestionIndex < questions.length - 1) {
