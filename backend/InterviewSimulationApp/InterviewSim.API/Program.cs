@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// === הוספת CORS ===
+// === ????? CORS ===
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
@@ -22,19 +22,19 @@ builder.Services.AddCors(options =>
                         .AllowAnyHeader());
 });
 
-// === הוספת DbContext ===
+// === ????? DbContext ===
 builder.Services.AddDbContext<InterviewSimContext>(options =>
     options.UseMySql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
         ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))
     ));
 
-// === הוספת השירותים למערכת ה-DI ===
+// === ????? ???????? ?????? ?-DI ===
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService>(serviceProvider =>
 {
-    var bucketName = builder.Configuration["AWS:BucketName"]; // קבלת ה-bucketName מתוך קובץ הקונפיגורציה
+    var bucketName = builder.Configuration["AWS:BucketName"]; // ÷??? ?-bucketName ???? ÷??? ?÷??????????
     var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
     var s3Service = serviceProvider.GetRequiredService<S3Service>();
     return new UserService(userRepository, s3Service, bucketName);
@@ -44,24 +44,24 @@ builder.Services.AddScoped<IInterviewRepository, InterviewRepository>();
 builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
 builder.Services.AddScoped<IAnswerRepository, AnswerRepository>();
 
-// שירותי בינה מלאכותית
+// ?????? ???? ????????
 builder.Services.AddScoped<IAIService, AIService>();
 builder.Services.AddHttpClient<AIService>();
 
-// שירותי AWS S3
+// ?????? AWS S3
 builder.Services.AddSingleton<S3Service>();
 builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
 builder.Services.AddAWSService<IAmazonS3>();
-builder.Services.AddHttpContextAccessor(); // הוסף שורה זו
+builder.Services.AddHttpContextAccessor(); // ???? ???? ??
 
-// טעינת OpenAI API Key
+// ????? OpenAI API Key
 var openAiApiKey = builder.Configuration["OpenAI:ApiKey"];
 if (string.IsNullOrEmpty(openAiApiKey))
 {
     throw new Exception("OpenAI API Key is missing from configuration.");
 }
 
-// === הוספת Authentication עבור JWT ===
+// === ????? Authentication ???? JWT ===
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -79,10 +79,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// === הוספת Controllers ===
+// === ????? Controllers ===
 builder.Services.AddControllers();
 
-// === הוספת Swagger ===
+// === ????? Swagger ===
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "InterviewSim API", Version = "v1" });
@@ -109,17 +109,17 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// === בניית האפליקציה ===
+// === ????? ?????÷??? ===
 var app = builder.Build();
 
-// === טיפול בחיבור למסד הנתונים ===
-using (var scope = app.Services.CreateScope())  // שמים את זה אחרי builder.Build()
+// === ????? ?????? ???? ??????? ===
+using (var scope = app.Services.CreateScope())  // ???? ?? ?? ???? builder.Build()
 {
     var services = scope.ServiceProvider;
     try
     {
         var dbContext = services.GetRequiredService<InterviewSimContext>();
-        dbContext.Database.Migrate(); // שימוש ב-Migrations במקום EnsureCreated()
+        dbContext.Database.Migrate(); // ????? ?-Migrations ??÷?? EnsureCreated()
         Console.WriteLine("Database connection is successful!");
     }
     catch (Exception ex)
@@ -128,7 +128,7 @@ using (var scope = app.Services.CreateScope())  // שמים את זה אחרי builder.Build
     }
 }
 
-// === הגדרות Middleware ===
+// === ?????? Middleware ===
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -141,5 +141,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// === הפעלת האפליקציה ===
+// === ????? ?????÷??? ===
 app.Run();

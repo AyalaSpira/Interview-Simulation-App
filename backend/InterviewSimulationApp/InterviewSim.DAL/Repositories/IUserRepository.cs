@@ -9,4 +9,8 @@ public interface IUserRepository
     Task AddUserAsync(User newUser);
     Task<List<User>> GetAllUsersAsync();
 
+    Task<User> GetUserByIdAsync(int userId); // פונקציה חדשה לשליפה לפי userId
+
+
+
 }

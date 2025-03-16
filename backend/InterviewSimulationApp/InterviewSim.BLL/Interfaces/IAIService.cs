@@ -10,7 +10,7 @@ namespace InterviewSim.BLL.Interfaces
         // חילוץ תחום ההתמחות מתוך הרזומה
         Task<string> AnalyzeResumeAsync(string resumeContent);
         // יצירת שאלות בהתבסס על תחום ההתמחות
-        Task<List<string>> GenerateQuestionsAsync(string resumeContent);
+        Task<List<string>> GenerateQuestionsAsync(string resumeContent,int num=5);
         // ניתוח תשובות והפקת סיכום הראיון
         Task<string> AnalyzeInterviewAsync(List<string> answers, List<string> questions);
 

@@ -25,38 +25,61 @@ namespace InterviewSim.BLL.Implementations
             _endpoint = configuration["OpenAI:Endpoint"];
         }
 
-        // מימוש הפונקציה לחילוץ תחום ההתמחות מתוך הרזומה
+        // מקבלת תוכן רזומה ומנתחת את תחום העבודה בונה פרומט לבינה כדי להוציא את התחום מהתוכן
         public async Task<string> AnalyzeResumeAsync(string resumeContent)
         {
-            var prompt = $"Analyze this resume and identify the field of expertise: {resumeContent}";
-            return await GenerateSummaryFromAI(prompt);
+            var prompt = $"Analyze the following resume and extract the candidate's primary job field and key skills. " +
+                         $"Return only the most relevant details for the field of expertise, such as job title, " +
+                         $"primary domain, and top skills based on the content of the resume: {resumeContent}";
+
+            var requestBody = new
+            {
+                model = _model,
+                messages = new[] { new { role = "user", content = prompt } },
+                max_tokens = 200
+            };
+
+            var jsonRequest = JsonSerializer.Serialize(requestBody);
+            var content = new StringContent(jsonRequest, System.Text.Encoding.UTF8, "application/json");
+
+            _httpClient.DefaultRequestHeaders.Clear();
+            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_apiKey}");
+
+            try
+            {
+                var response = await _httpClient.PostAsync(_endpoint, content);
+                response.EnsureSuccessStatusCode();
+
+                var responseString = await response.Content.ReadAsStringAsync();
+                var jsonResponse = JsonSerializer.Deserialize<OpenAIResponse>(responseString);
+                Console.WriteLine("------------------------------------");
+                Console.WriteLine(jsonResponse?.Choices?[0].Message?.Content.Trim());
+                return jsonResponse?.Choices?[0].Message?.Content.Trim() ?? "Unable to extract job field.";
+            }
+            catch (Exception ex)
+            {
+                return $"Error analyzing resume: {ex.Message}";
+            }
         }
 
-        // מימוש הפונקציה ליצירת שאלות בהתאם לקטגוריה
-        public async Task<List<string>> GenerateQuestionsAsync(string resumeContent)
+        //GenerateQuestionsFromAI-שולחת לבינה 2 פרומט אחת אישי ואחת מקצועי
+        public async Task<List<string>> GenerateQuestionsAsync(string category, int numberOfQuestions = 5)
         {
-            var category = await AnalyzeResumeAsync(resumeContent); // חילוץ הקטגוריה מתוך הרזומה
             var personalPrompt = $"Generate personal interview questions for a {category} job.";
             var technicalPrompt = $"Generate technical interview questions for a {category} job.";
 
-            var personalQuestions = await GenerateQuestionsFromAI(personalPrompt) ?? new List<string>();
-            var technicalQuestions = await GenerateQuestionsFromAI(technicalPrompt) ?? new List<string>();
+            var personalQuestions = await GenerateQuestionsFromAI(personalPrompt);
+            var technicalQuestions = await GenerateQuestionsFromAI(technicalPrompt);
 
             var questions = new List<string>();
             questions.AddRange(personalQuestions);
             questions.AddRange(technicalQuestions);
 
-            return questions;
+            return questions.Take(numberOfQuestions).ToList(); // להגביל ל-5 שאלות
         }
 
-        // מימוש הפונקציה לניתוח תשובות והפקת סיכום
-        public async Task<string> AnalyzeInterviewAsync(List<string> answers, List<string> questions)
-        {
-            var prompt = BuildPrompt(answers, questions);
-            return await GenerateSummaryFromAI(prompt);
-        }
 
-        // פונקציה פנימית ליצירת שאלות דרך ה-AI
+        //  היא שולחת בעצמה לבינה פונקציה פנימית ליצירת שאלות דרך ה-AI
         public async Task<List<string>> GenerateQuestionsFromAI(string prompt)
         {
             var requestBody = new
@@ -106,7 +129,8 @@ namespace InterviewSim.BLL.Implementations
             return new List<string>();
         }
 
-        // פונקציה פנימית להפקת סיכום
+        #region   הפקת הסיכום בסוף
+        //ראיון פונקציה פנימית להפקת סיכום
         private async Task<string> GenerateSummaryFromAI(string prompt)
         {
             var requestBody = new
@@ -114,7 +138,7 @@ namespace InterviewSim.BLL.Implementations
                 model = _model,
                 messages = new[] { new { role = "system", content = "You are an AI interview analysis tool." },
                                    new { role = "user", content = prompt } },
-                max_tokens = 500
+                max_tokens = 100
             };
 
             var jsonRequest = JsonSerializer.Serialize(requestBody);
@@ -144,7 +168,7 @@ namespace InterviewSim.BLL.Implementations
         {
             var prompt = "Summarize the interview based on the following answers and questions:\n\n";
 
-            for (int i = 0; i < questions.Count; i++)
+            for (int i = 0; i < 3; i++)
             {
                 prompt += $"Question: {questions[i]}\nAnswer: {answers[i]}\n\n";
             }
@@ -152,5 +176,18 @@ namespace InterviewSim.BLL.Implementations
             prompt += "Based on this, please provide a summary of the candidate's performance.";
             return prompt;
         }
+
+
+        public async Task<string> AnalyzeInterviewAsync(List<string> answers, List<string> questions)
+        {
+            // נבנה את ההוראה על פי השאלות והתשובות
+            var prompt = BuildPrompt(answers, questions);
+
+            // נשלח את הפלט ל-AI כדי לקבל סיכום
+            return await GenerateSummaryFromAI(prompt);
+        }
+        #endregion
+
+
     }
 }

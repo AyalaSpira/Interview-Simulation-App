@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
+using InterviewSim.Shared.DTOs;
 
 namespace InterviewSim.BLL.Implementations
 {
@@ -13,19 +15,29 @@ namespace InterviewSim.BLL.Implementations
         private readonly Dictionary<int, int> _interviewAnswersCount = new Dictionary<int, int>();
         private readonly IUserService _userService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IUserRepository _userRepository;
 
-        public InterviewService(IAIService aiService, IUserService userService, IHttpContextAccessor httpContextAccessor)
+        public InterviewService(IAIService aiService, IUserService userService, IHttpContextAccessor httpContextAccessor, IUserRepository userRepository)
         {
             _aiService = aiService;
             _userService = userService;
             _httpContextAccessor = httpContextAccessor;
+            _userRepository = userRepository;
         }
 
-        public async Task<string> StartInterviewAsync(int userId)
+        public async Task<string> GetUserResumePathAsync(int userId)
         {
-            var resumeContent = await GetResumeContentAsync(userId);
-            var category = await _aiService.AnalyzeResumeAsync(resumeContent);
+            var user = await _userRepository.GetUserByIdAsync(userId); // שליפת המשתמש מהריפוזיטורי
+            return user?.ResumePath ?? string.Empty; // החזרת הנתיב אם קיים, אחרת מחרוזת ריקה
+        }
 
+        public async Task<Interview> StartInterviewAsync(int userId)
+        {
+            Task<User> a = _userRepository.GetUserByIdAsync(userId);
+            var resumeContent = await GetResumeContentAsync(a.Result.ResumePath);
+            //שליחה ל_aiService
+            var category = await _aiService.AnalyzeResumeAsync(resumeContent);
+            //שליחה ל_aiService
             var questions = await _aiService.GenerateQuestionsAsync(category);
 
             var interview = new Interview
@@ -40,14 +52,11 @@ namespace InterviewSim.BLL.Implementations
 
             _interviewAnswersCount[userId] = 0;
 
-            return $"Interview started with {questions.Count} questions for category: {category}";
+            Console.WriteLine($"Interview started with {questions.Count} questions for category: {category}");
+            return interview;
         }
 
-        public async Task<List<string>> GetInterviewQuestionsAsync(int interviewId)
-        {
-            return new List<string> { "What is your experience?", "What are your strengths?" }; // תשאל את השאלות מ-AI
-        }
-
+        //תשובות וניתחו התשובות
         public async Task<string> SubmitAnswersAsync(int interviewId, List<string> answers)
         {
             var userId = 0; // Retrieve userId based on interviewId from the data source
@@ -59,9 +68,9 @@ namespace InterviewSim.BLL.Implementations
                 _interviewAnswersCount[userId] += answers.Count;
             }
 
-            if (_interviewAnswersCount[userId] >= 10)
+            if (_interviewAnswersCount[userId] >= 3)
             {
-                var category = await _aiService.AnalyzeResumeAsync(await GetResumeContentAsync(userId));
+                var category = " ";//await _aiService.AnalyzeResumeAsync(await GetResumeContentAsync(userId));
                 questions = await _aiService.GenerateQuestionsAsync(category);
             }
 
@@ -69,34 +78,28 @@ namespace InterviewSim.BLL.Implementations
             return summary;
         }
 
-        public async Task<string> GetResumeContentAsync(int userId)
+        //חזיר את תוכן הרזומה עי מזהה יוזר
+        public async Task<string> GetResumeContentAsync(string path)
         {
-            // תחילת שליפה באמצעות HttpContext אם יש טוקן
-            var token = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].ToString();
-
-            if (string.IsNullOrEmpty(token))
-            {
-                return "Token is missing"; // טעות אם אין טוקן
-            }
-
-            var resumePath = await _userService.GetResumeContentAsync(userId.ToString());
+            var resumePath = await _userService.GetResumeContentAsync(path);
 
             if (string.IsNullOrEmpty(resumePath))
             {
                 return string.Empty; // אם אין נתיב רזומה
             }
 
-            return await GetResumeContentFromFileAsync(resumePath);
+            return await GetResumeContentFromFileAsync(path);
         }
+//פונ פנימית שמחזירה את התכון
+private async Task<string> GetResumeContentFromFileAsync(string resumePath)
+{
+    if (File.Exists(resumePath))
+    {
+        return await File.ReadAllTextAsync(resumePath); // קריאת תוכן הרזומה
+    }
 
-        private async Task<string> GetResumeContentFromFileAsync(string resumePath)
-        {
-            if (File.Exists(resumePath))
-            {
-                return await File.ReadAllTextAsync(resumePath); // קריאת תוכן הרזומה
-            }
+    return string.Empty; // במקרה של שגיאה או אם אין רזומה
+}
 
-            return string.Empty; // במקרה של שגיאה או אם אין רזומה
-        }
     }
 }

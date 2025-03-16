@@ -1,9 +1,11 @@
 using InterviewSim.BLL.Interfaces;
+using InterviewSim.DAL.Entities;
 using InterviewSim.DAL.Repositories;
 using InterviewSim.Shared.DTOs;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 public class UserService : IUserService
@@ -77,11 +79,13 @@ public class UserService : IUserService
 
     public async Task<string> GetResumeContentAsync(string resumePath)
     {
-        if (File.Exists(resumePath)) 
+        if (!File.Exists(resumePath)) 
         {
             return await File.ReadAllTextAsync(resumePath); // קריאת תוכן הרזומה
         }
 
         return string.Empty; // במקרה של שגיאה או אם אין רזומה
     }
+
+     
 }

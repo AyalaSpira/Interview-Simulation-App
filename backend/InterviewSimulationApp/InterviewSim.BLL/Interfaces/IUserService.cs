@@ -15,6 +15,6 @@ namespace InterviewSim.BLL.Interfaces
 
         Task<string> GetResumeContentAsync(string resumePath); // הוספת השיטה הזו
 
-
+        //Task<string> GetCurrentUserId();
     }
 }

@@ -61,6 +61,9 @@ public class UserRepository : IUserRepository
         return await _context.Users.ToListAsync();
     }
 
-    // אפשרות למימוש לפונקציות נוספות כמו מחיקת משתמש או עדכון
-    // אפשר להוסיף כאן פעולות נוספות כמו מחיקת משתמשים ועדכון פרטי משתמש
+    public async Task<User> GetUserByIdAsync(int userId)
+    {
+        return await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+    }
+
 }

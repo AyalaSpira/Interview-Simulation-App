@@ -11,7 +11,7 @@ public class UserController : ControllerBase
 {
     private readonly S3Service _s3Service;
     private readonly IUserService _userService;
-    private readonly string _bucketName = ""; // Change this to your bucket name
+    private readonly string _bucketName = ""; 
 
     public UserController(S3Service s3Service, IUserService userService)
     {
@@ -140,4 +140,13 @@ public class UserController : ControllerBase
         }
         return passwordClaim.Value;
     }
+
+    public string GetCurrentUserId()
+    {
+        return User.Claims
+     .Where(c => c.Type == ClaimTypes.NameIdentifier)
+     .Select(c => c.Value)
+     .FirstOrDefault(v => int.TryParse(v, out _));
+    }
+
 }
