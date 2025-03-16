@@ -13,5 +13,8 @@ namespace InterviewSim.BLL.Interfaces
         Task<UserDTO> GetUserByIdAsync(string password, string name);
         Task UpdateUserResumeAsync(string password, string name, IFormFile resume);
 
+        Task<string> GetResumeContentAsync(string resumePath); // הוספת השיטה הזו
+
+
     }
 }

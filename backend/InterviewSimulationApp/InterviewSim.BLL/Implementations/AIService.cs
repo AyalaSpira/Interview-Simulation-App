@@ -4,6 +4,8 @@ using System.Text.Json;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using InterviewSim.BLL.Interfaces;
+using System.Linq;
+using System;
 using InterviewSim.DAL.Entities;
 
 namespace InterviewSim.BLL.Implementations
@@ -23,33 +25,22 @@ namespace InterviewSim.BLL.Implementations
             _endpoint = configuration["OpenAI:Endpoint"];
         }
 
+        // מימוש הפונקציה לחילוץ תחום ההתמחות מתוך הרזומה
         public async Task<string> AnalyzeResumeAsync(string resumeContent)
         {
             var prompt = $"Analyze this resume and identify the field of expertise: {resumeContent}";
-            var result = await GenerateSummaryFromAI(prompt);
-            return result;
+            return await GenerateSummaryFromAI(prompt);
         }
 
-        public async Task<List<string>> GenerateQuestionsAsync(string category)
+        // מימוש הפונקציה ליצירת שאלות בהתאם לקטגוריה
+        public async Task<List<string>> GenerateQuestionsAsync(string resumeContent)
         {
+            var category = await AnalyzeResumeAsync(resumeContent); // חילוץ הקטגוריה מתוך הרזומה
             var personalPrompt = $"Generate personal interview questions for a {category} job.";
             var technicalPrompt = $"Generate technical interview questions for a {category} job.";
 
             var personalQuestions = await GenerateQuestionsFromAI(personalPrompt) ?? new List<string>();
             var technicalQuestions = await GenerateQuestionsFromAI(technicalPrompt) ?? new List<string>();
-
-            if (!personalQuestions.Any() && !technicalQuestions.Any())
-            {
-                // שאלות ברירת מחדל למקרה שהבינה המלאכותית לא מחזירה כלום
-                return new List<string>
-        {
-            "ספר לי על עצמך.",
-            "מהן החוזקות שלך?",
-            "איך אתה מתמודד עם לחץ?",
-            "מהי השאיפה שלך בקריירה?",
-            "תן לי דוגמה לאתגר שהתמודדת איתו בעבודה קודמת."
-        };
-            }
 
             var questions = new List<string>();
             questions.AddRange(personalQuestions);
@@ -58,15 +49,15 @@ namespace InterviewSim.BLL.Implementations
             return questions;
         }
 
-
+        // מימוש הפונקציה לניתוח תשובות והפקת סיכום
         public async Task<string> AnalyzeInterviewAsync(List<string> answers, List<string> questions)
         {
             var prompt = BuildPrompt(answers, questions);
-            var result = await GenerateSummaryFromAI(prompt);
-            return result;
+            return await GenerateSummaryFromAI(prompt);
         }
 
-        private async Task<List<string>> GenerateQuestionsFromAI(string prompt)
+        // פונקציה פנימית ליצירת שאלות דרך ה-AI
+        public async Task<List<string>> GenerateQuestionsFromAI(string prompt)
         {
             var requestBody = new
             {
@@ -81,24 +72,41 @@ namespace InterviewSim.BLL.Implementations
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_apiKey}");
 
-            var response = await _httpClient.PostAsync(_endpoint, content);
-            response.EnsureSuccessStatusCode();
-
-            var responseString = await response.Content.ReadAsStringAsync();
-            var jsonResponse = JsonSerializer.Deserialize<OpenAIResponse>(responseString);
-
-            // הימנע מ-NullReferenceException: אם אין תגובה נכונה, החזר רשימה ריקה
-            if (jsonResponse?.Choices?.Count > 0 && jsonResponse.Choices[0]?.Message?.Content != null)
+            try
             {
-                var responseText = jsonResponse.Choices[0].Message.Content.Trim();
+                var response = await _httpClient.PostAsync(_endpoint, content);
+                response.EnsureSuccessStatusCode();
 
-                // במקרה שהתשובה היא טקסט מרובה שורות, נוכל לפרק את התשובה לשורות
-                return responseText.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                var responseString = await response.Content.ReadAsStringAsync();
+                Console.WriteLine("Response from OpenAI: " + responseString);  // הדפסת התגובה לעיון
+
+                var jsonResponse = JsonSerializer.Deserialize<OpenAIResponse>(responseString);
+
+                // בדיקת התגובה
+                if (jsonResponse?.Choices?.Count > 0 && jsonResponse.Choices[0]?.Message?.Content != null)
+                {
+                    var responseText = jsonResponse.Choices[0].Message.Content.Trim();
+                    Console.WriteLine("Parsed response text: " + responseText);  // הדפסת הטקסט המפוענח
+
+                    // ניפוי אם יש בעיות
+                    if (string.IsNullOrEmpty(responseText))
+                    {
+                        Console.WriteLine("No questions generated.");
+                    }
+
+                    var questions = responseText.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                    return questions;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error generating questions: " + ex.Message);
             }
 
-            return new List<string>(); // אם אין תשובה, החזר רשימה ריקה
+            return new List<string>();
         }
 
+        // פונקציה פנימית להפקת סיכום
         private async Task<string> GenerateSummaryFromAI(string prompt)
         {
             var requestBody = new
@@ -115,15 +123,23 @@ namespace InterviewSim.BLL.Implementations
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_apiKey}");
 
-            var response = await _httpClient.PostAsync(_endpoint, content);
-            response.EnsureSuccessStatusCode();
+            try
+            {
+                var response = await _httpClient.PostAsync(_endpoint, content);
+                response.EnsureSuccessStatusCode();
 
-            var responseString = await response.Content.ReadAsStringAsync();
-            var jsonResponse = JsonSerializer.Deserialize<OpenAIResponse>(responseString);
+                var responseString = await response.Content.ReadAsStringAsync();
+                var jsonResponse = JsonSerializer.Deserialize<OpenAIResponse>(responseString);
 
-            return jsonResponse?.Choices?[0].Message?.Content.Trim() ?? "Unable to generate summary";
+                return jsonResponse?.Choices?[0].Message?.Content.Trim() ?? "Unable to generate summary";
+            }
+            catch (Exception ex)
+            {
+                return $"Error generating summary: {ex.Message}";
+            }
         }
 
+        // פונקציה פנימית לבניית הפלט
         private string BuildPrompt(List<string> answers, List<string> questions)
         {
             var prompt = "Summarize the interview based on the following answers and questions:\n\n";

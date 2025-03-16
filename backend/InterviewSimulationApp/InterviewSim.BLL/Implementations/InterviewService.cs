@@ -1,54 +1,102 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using InterviewSim.BLL.Interfaces;
 using InterviewSim.DAL.Entities;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace InterviewSim.BLL.Implementations
 {
     public class InterviewService : IInterviewService
     {
         private readonly IAIService _aiService;
+        private readonly Dictionary<int, int> _interviewAnswersCount = new Dictionary<int, int>();
+        private readonly IUserService _userService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public InterviewService(IAIService aiService)
+        public InterviewService(IAIService aiService, IUserService userService, IHttpContextAccessor httpContextAccessor)
         {
             _aiService = aiService;
+            _userService = userService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<string> StartInterviewAsync(int userId)
         {
-            // חילוץ תחום ההתמחות מתוך הרזומה (בינה מלאכותית)
-            var resumeContent = await GetResumeContentAsync(userId); // המידע הזה יכול להגיע מהמשתמש או ממקום אחר
+            var resumeContent = await GetResumeContentAsync(userId);
             var category = await _aiService.AnalyzeResumeAsync(resumeContent);
 
-            // יצירת שאלות בהתבסס על תחום ההתמחות
             var questions = await _aiService.GenerateQuestionsAsync(category);
 
-            // יצירת הראיון
-            var interview = new Interview { InterviewId = 1, Questions = questions };
+            var interview = new Interview
+            {
+                InterviewId = 1,
+                Questions = questions,
+                UserId = userId,
+                InterviewDate = DateTime.Now,
+                Status = "In Progress",
+                Answers = new List<string>()
+            };
+
+            _interviewAnswersCount[userId] = 0;
 
             return $"Interview started with {questions.Count} questions for category: {category}";
         }
 
         public async Task<List<string>> GetInterviewQuestionsAsync(int interviewId)
         {
-            // החזרת השאלות
-            return new List<string> { "What is your experience?", "What are your strengths?" }; // כאן, הפוך לשאילתות AI אמיתיות
+            return new List<string> { "What is your experience?", "What are your strengths?" }; // תשאל את השאלות מ-AI
         }
 
         public async Task<string> SubmitAnswersAsync(int interviewId, List<string> answers)
         {
-            // קבלת השאלות מהראיון
-            var questions = new List<string> { "What is your experience?", "What are your strengths?" }; // כאן, החזר את השאלות מ-AI
+            var userId = 0; // Retrieve userId based on interviewId from the data source
 
-            // ניתוח התשובות והפקת סיכום
+            var questions = new List<string> { "What is your experience?", "What are your strengths?" }; // שאלות מ-AI או מה-DB
+
+            if (_interviewAnswersCount.ContainsKey(userId))
+            {
+                _interviewAnswersCount[userId] += answers.Count;
+            }
+
+            if (_interviewAnswersCount[userId] >= 10)
+            {
+                var category = await _aiService.AnalyzeResumeAsync(await GetResumeContentAsync(userId));
+                questions = await _aiService.GenerateQuestionsAsync(category);
+            }
+
             var summary = await _aiService.AnalyzeInterviewAsync(answers, questions);
             return summary;
         }
 
-        // פונקציה זו יכולה לכלול קריאה למאגר נתונים או לבינה מלאכותית לחילוץ הרזומה
-        private async Task<string> GetResumeContentAsync(int userId)
+        public async Task<string> GetResumeContentAsync(int userId)
         {
-            return "Resume content"; // כאן עליך לבצע את פעולת החילוץ של הרזומה
+            // תחילת שליפה באמצעות HttpContext אם יש טוקן
+            var token = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].ToString();
+
+            if (string.IsNullOrEmpty(token))
+            {
+                return "Token is missing"; // טעות אם אין טוקן
+            }
+
+            var resumePath = await _userService.GetResumeContentAsync(userId.ToString());
+
+            if (string.IsNullOrEmpty(resumePath))
+            {
+                return string.Empty; // אם אין נתיב רזומה
+            }
+
+            return await GetResumeContentFromFileAsync(resumePath);
+        }
+
+        private async Task<string> GetResumeContentFromFileAsync(string resumePath)
+        {
+            if (File.Exists(resumePath))
+            {
+                return await File.ReadAllTextAsync(resumePath); // קריאת תוכן הרזומה
+            }
+
+            return string.Empty; // במקרה של שגיאה או אם אין רזומה
         }
     }
 }

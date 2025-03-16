@@ -11,9 +11,7 @@ public class UserController : ControllerBase
 {
     private readonly S3Service _s3Service;
     private readonly IUserService _userService;
-
-    // יש להוסיף את שם ה-Bucket שברצונך לעבוד איתו.
-    private readonly string _bucketName = ""; // שנה לפי הצורך
+    private readonly string _bucketName = ""; // Change this to your bucket name
 
     public UserController(S3Service s3Service, IUserService userService)
     {
@@ -21,7 +19,6 @@ public class UserController : ControllerBase
         _userService = userService;
     }
 
-    // API להעלאת רזומה חדש
     [HttpPost("upload-resume")]
     public async Task<IActionResult> UploadResume([FromForm] IFormFile resume)
     {
@@ -30,8 +27,8 @@ public class UserController : ControllerBase
             return BadRequest("No file uploaded.");
         }
 
-        var username = GetCurrentUserName(); // הפונקציה שמחזירה את שם המשתמש הנוכחי
-        var password = GetCurrentUserPassword(); // הפונקציה שמחזירה את הסיסמה
+        var username = GetCurrentUserName();
+        var password = GetCurrentUserPassword();
         var user = await _userService.GetUserByIdAsync(password, username);
 
         if (user == null)
@@ -39,24 +36,18 @@ public class UserController : ControllerBase
             return NotFound("User not found.");
         }
 
-        // מחיקת רזומה ישן אם קיים
         if (!string.IsNullOrEmpty(user.ResumePath))
         {
-            // הוספת שם ה-Bucket
             await _s3Service.DeleteFileAsync(user.ResumePath, _bucketName);
         }
 
-        // העלאת קובץ חדש ל-S3 עם שם ה-Bucket
         var resumeUrl = await _s3Service.UploadFileAsync(resume, _bucketName);
-
-        // עדכון הנתיב במשתמש
         user.ResumePath = resumeUrl;
         await _userService.UpdateUserAsync(user);
 
         return Ok(new { ResumeUrl = resumeUrl });
     }
 
-    // API לעדכון רזומה קיים
     [HttpPost("update-resume")]
     public async Task<IActionResult> UpdateResume([FromForm] IFormFile resume)
     {
@@ -65,8 +56,8 @@ public class UserController : ControllerBase
             return BadRequest("No file uploaded.");
         }
 
-        var username = GetCurrentUserName(); // הפונקציה שמחזירה את שם המשתמש הנוכחי
-        var password = GetCurrentUserPassword(); // הפונקציה שמחזירה את הסיסמה
+        var username = GetCurrentUserName();
+        var password = GetCurrentUserPassword();
         var user = await _userService.GetUserByIdAsync(password, username);
 
         if (user == null)
@@ -74,29 +65,23 @@ public class UserController : ControllerBase
             return NotFound("User not found.");
         }
 
-        // מחיקת רזומה ישן אם קיים
         if (!string.IsNullOrEmpty(user.ResumePath))
         {
-            // הוספת שם ה-Bucket
             await _s3Service.DeleteFileAsync(user.ResumePath, _bucketName);
         }
 
-        // העלאת קובץ חדש ל-S3 עם שם ה-Bucket
         var resumeUrl = await _s3Service.UploadFileAsync(resume, _bucketName);
-
-        // עדכון הנתיב במשתמש
         user.ResumePath = resumeUrl;
         await _userService.UpdateUserAsync(user);
 
         return Ok(new { ResumeUrl = resumeUrl });
     }
 
-    // API למחיקת רזומה
     [HttpDelete("delete-resume")]
     public async Task<IActionResult> DeleteResume()
     {
-        var username = GetCurrentUserName(); // הפונקציה שמחזירה את שם המשתמש הנוכחי
-        var password = GetCurrentUserPassword(); // הפונקציה שמחזירה את הסיסמה
+        var username = GetCurrentUserName();
+        var password = GetCurrentUserPassword();
         var user = await _userService.GetUserByIdAsync(password, username);
 
         if (user == null)
@@ -104,24 +89,21 @@ public class UserController : ControllerBase
             return NotFound("User not found.");
         }
 
-        // מחיקת קובץ הרזומה ב-S3
         if (!string.IsNullOrEmpty(user.ResumePath))
         {
-            // הוספת שם ה-Bucket
             await _s3Service.DeleteFileAsync(user.ResumePath, _bucketName);
-            user.ResumePath = null; // לא לשמור על הנתיב של הרזומה
+            user.ResumePath = null;
             await _userService.UpdateUserAsync(user);
         }
 
         return Ok(new { message = "Resume deleted successfully." });
     }
 
-    // API לקבלת פרטי המשתמש
     [HttpGet("get")]
     public async Task<IActionResult> GetUserDetails()
     {
-        var username = GetCurrentUserName(); // הפונקציה שמחזירה את שם המשתמש הנוכחי
-        var password = GetCurrentUserPassword(); // הפונקציה שמחזירה את הסיסמה
+        var username = GetCurrentUserName();
+        var password = GetCurrentUserPassword();
         var user = await _userService.GetUserByIdAsync(password, username);
 
         if (user == null)
@@ -132,7 +114,6 @@ public class UserController : ControllerBase
         return Ok(new { Username = user.Username, ResumePath = user.ResumePath });
     }
 
-    // API לקבלת כל המשתמשים (למנהל)
     [HttpGet("all-users")]
     public async Task<IActionResult> GetAllUsers()
     {
@@ -142,29 +123,21 @@ public class UserController : ControllerBase
 
     public string GetCurrentUserName()
     {
-        // לשלוף את שם המשתמש מתוך ה-Claims של הטוקן (אם אתה משתמש ב-JWT)
         var userNameClaim = User.FindFirst(ClaimTypes.Name);
-
         if (userNameClaim == null)
         {
-            // אם לא מצאנו את שם המשתמש בטוקן, נחזיר שגיאה או שם ברירת מחדל
             throw new UnauthorizedAccessException("User not authorized.");
         }
-
         return userNameClaim.Value;
     }
 
     public string GetCurrentUserPassword()
     {
-        // לשלוף את הסיסמה מתוך ה-Claims של הטוקן (אם יש טוקן שמחזיק את הסיסמה)
         var passwordClaim = User.FindFirst("Password");
-
         if (passwordClaim == null)
         {
-            // אם לא מצאנו את הסיסמה בטוקן, נחזיר שגיאה או סיסמה ברירת מחדל
             throw new UnauthorizedAccessException("User not authorized.");
         }
-
         return passwordClaim.Value;
     }
 }

@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using Microsoft.AspNetCore.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,6 +52,7 @@ builder.Services.AddHttpClient<AIService>();
 builder.Services.AddSingleton<S3Service>();
 builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
 builder.Services.AddAWSService<IAmazonS3>();
+builder.Services.AddHttpContextAccessor(); // הוסף שורה זו
 
 // טעינת OpenAI API Key
 var openAiApiKey = builder.Configuration["OpenAI:ApiKey"];

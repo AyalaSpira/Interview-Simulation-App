@@ -1,9 +1,7 @@
 using InterviewSim.BLL.Interfaces;
-using iTextSharp.text.pdf;
-using iTextSharp.text.pdf.parser;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Text;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace InterviewSim.API.Controllers
@@ -12,52 +10,50 @@ namespace InterviewSim.API.Controllers
     [Route("api/[controller]")]
     public class InterviewController : ControllerBase
     {
-        private readonly IUserService _userService;
-        private readonly IAIService _aiService;
-        private readonly S3Service _s3Service;
+        private readonly IInterviewService _interviewService;
 
-        public InterviewController(IUserService userService, IAIService aiService, S3Service s3Service)
+        public InterviewController(IInterviewService interviewService)
         {
-            _userService = userService;
-            _aiService = aiService;
-            _s3Service = s3Service;
+            _interviewService = interviewService;
         }
 
-        [HttpPost("upload-resume")]
-        public async Task<IActionResult> UploadResume([FromForm] IFormFile resume)
+        // Endpoint להתחלת ראיון
+        [HttpPost("start")]
+        public async Task<IActionResult> StartInterview(int userId)
         {
-            // 1. העלה את קובץ ה-PDF ל-S3
-            var resumeUrl = await _s3Service.UploadFileAsync(resume, "ayala-spira-testpnoren");
+            if (userId <= 0)
+            {
+                return BadRequest("Invalid user ID.");
+            }
 
-            // 2. קריאת תוכן הרזומה
-            var resumeContent = await ReadResumeContentAsync(resume);
-
-            // 3. שליחה לבינה מלאכותית לפענוח תחום ההתמחות
-            var category = await _aiService.AnalyzeResumeAsync(resumeContent);
-
-            // 4. החזרת ה-URL והקטגוריה שנמצא
-            return Ok(new { ResumeUrl = resumeUrl, Category = category });
-        }
-
-        private async Task<string> ReadResumeContentAsync(IFormFile resume)
-        {
             try
             {
-                using (var stream = resume.OpenReadStream())
-                using (var reader = new PdfReader(stream))
-                {
-                    var content = new StringBuilder();
-                    for (int i = 1; i <= reader.NumberOfPages; i++)
-                    {
-                        content.Append(PdfTextExtractor.GetTextFromPage(reader, i));
-                    }
-                    return content.ToString();
-                }
+                var result = await _interviewService.StartInterviewAsync(userId);
+                return Ok(new { Message = result });
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error reading PDF: {ex.Message}");
-                return string.Empty;
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        // Endpoint לשליחת תשובות לראיון
+        [HttpPost("submit-answers")]
+        public async Task<IActionResult> SubmitAnswers(int interviewId, int userId, [FromBody] List<string> answers)
+        {
+            if (interviewId <= 0 || userId <= 0 || answers == null || answers.Count == 0)
+            {
+                return BadRequest("Invalid data.");
+            }
+
+            try
+            {
+                var result = await _interviewService.SubmitAnswersAsync(interviewId, answers);
+                return Ok(new { Summary = result });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
     }
