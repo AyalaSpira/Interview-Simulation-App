@@ -1,125 +1,159 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { jwtDecode } from "jwt-decode";
 
 interface Question {
   question: string;
   timer: number;
 }
 
+interface DecodedToken {
+  nameid: number;
+}
+
 const Interview: React.FC = () => {
-  const [file, setFile] = useState<File | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
-  const [answer, setAnswer] = useState<string>("");
-  const [timer, setTimer] = useState<number>(0);
-  const [timerActive, setTimerActive] = useState<boolean>(false);
+  const [answer, setAnswer] = useState<string>(""); 
+  const [timer, setTimer] = useState<number>(0); 
   const [showReport, setShowReport] = useState<boolean>(false);
-  
-  // פונקציה להעלאת קובץ
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      setFile(event.target.files[0]);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [userId, setUserId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const getUserIdFromToken = () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          console.error("Token not found in localStorage");
+          return;
+        }
+
+        const decoded: DecodedToken = jwtDecode(token);
+        setUserId(Number(decoded.nameid));
+      } catch (error) {
+        console.error("Error decoding token:", error);
+      }
+    };
+
+    getUserIdFromToken();
+  }, []);
+
+  useEffect(() => {
+    let countdown: NodeJS.Timeout;
+    if (timer > 0) {
+      countdown = setInterval(() => {
+        setTimer((prev) => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
+    } else {
+      if (currentQuestionIndex < questions.length - 1) {
+        handleNextQuestion();
+      }
     }
-  };
+    return () => clearInterval(countdown);
+  }, [timer]);
 
-  // פונקציה להתחיל את הראיון
   const startInterview = async () => {
-    if (file) {
-      const formData = new FormData();
-      formData.append("file", file);
+    if (!userId) {
+      alert("User ID not found. Please log in again.");
+      return;
+    }
 
-      // שלח את הקובץ לשרת לעיבוד AI (השרת יקרא את הקובץ ויחזיר שאלות)
-      const response = await fetch("http://localhost:5000/api/interview/start", {
+    try {
+      const response = await fetch(`http://localhost:5000/api/interview/start?userId=${userId}`, {
         method: "POST",
-        body: formData,
       });
 
       if (response.ok) {
         const data = await response.json();
-        setQuestions(data.questions); // השאלות שנשלחו מה-API
-        startTimer(data.questions[0].timer); // אתחול טיימר
+        if (data.questions && data.questions.length > 0) {
+          setQuestions(data.questions);
+          setCurrentQuestionIndex(0);
+          setTimer(data.questions[0].timer);  // הגדרת זמן השאלה הראשונה
+        } else {
+          alert("No questions returned from the AI. Please try again.");
+        }
+      } else {
+        alert("There was an error starting the interview.");
       }
+    } catch (error) {
+      alert("There was an error starting the interview.");
     }
   };
 
-  // הפעלת טיימר עבור השאלה
-  const startTimer = (time: number) => {
-    setTimer(time);
-    setTimerActive(true);
-    const countdown = setInterval(() => {
-      setTimer((prev) => {
-        if (prev <= 0) {
-          clearInterval(countdown);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+  const handleNextQuestion = () => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setTimer(questions[currentQuestionIndex + 1].timer);  // עדכון זמן השאלה הבאה
+    } else {
+      setShowReport(true);
+    }
   };
 
-  // שליחה של תשובה
-  const submitAnswer = () => {
-    if (answer) {
-      // שלח את התשובה לשרת
-      fetch("http://localhost:5000/api/interview/answer", {
+  const submitAnswer = async () => {
+    if (answer.trim() === "") {
+      alert("Please provide an answer.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch("https://localhost:5001/api/interview/submit-answers", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ answer, questionId: questions[currentQuestionIndex].question }),
-      }).then((response) => {
-        if (response.ok) {
-          // אם תשובה הוזנה נכון, עבור לשאלה הבאה
-          if (currentQuestionIndex < questions.length - 1) {
-            setCurrentQuestionIndex(currentQuestionIndex + 1);
-            startTimer(questions[currentQuestionIndex + 1].timer); // טיימר חדש לשאלה הבאה
-          } else {
-            setShowReport(true); // הצג את הדוח לאחר סיום השאלות
-          }
-          setAnswer(""); // ניקוי התשובה
-        }
+        body: JSON.stringify({ interviewId: currentQuestionIndex + 1, userId, answers: [answer] }),
       });
+
+      if (response.ok) {
+        setIsSubmitting(false);
+        setAnswer("");
+        handleNextQuestion();
+      } else {
+        throw new Error("Error submitting answer");
+      }
+    } catch (error) {
+      setIsSubmitting(false);
+      alert("There was an error submitting your answer.");
     }
   };
 
   return (
     <div>
       <h2>Interview Simulation</h2>
-
-      {/* Upload Resume */}
-      {!file && (
+      {!showReport ? (
         <div>
-          <input type="file" onChange={handleFileUpload} />
-          <button onClick={startInterview} disabled={!file}>
-            Start Interview
-          </button>
+          {questions.length > 0 && currentQuestionIndex < questions.length ? (
+            <>
+              <p>Question {currentQuestionIndex + 1}:</p>
+              <p>{questions[currentQuestionIndex]?.question}</p>
+              <p>Time remaining: {timer}s</p>
+              <input
+                type="text"
+                value={answer}
+                onChange={(e) => setAnswer(e.target.value)}
+                disabled={isSubmitting}
+              />
+              <button onClick={submitAnswer} disabled={isSubmitting}>
+                {isSubmitting ? "Submitting..." : "Submit Answer"}
+              </button>
+            </>
+          ) : (
+            <p>Loading questions...</p>
+          )}
+        </div>
+      ) : (
+        <div>
+          <p>Your interview is complete! Here is your report:</p>
         </div>
       )}
-
-      {/* Show current question */}
-      {questions.length > 0 && !showReport && (
-        <div>
-          <h3>{questions[currentQuestionIndex].question}</h3>
-          <p>Time left: {timer} seconds</p>
-          <input
-            type="text"
-            value={answer}
-            onChange={(e) => setAnswer(e.target.value)}
-          />
-          <button onClick={submitAnswer} disabled={timer <= 0}>
-            Submit Answer
-          </button>
-        </div>
-      )}
-
-      {/* Report */}
-      {showReport && (
-        <div>
-          <h3>Your Report:</h3>
-          <button onClick={() => alert("Generate Report")}>Generate Report</button>
-        </div>
-      )}
+      <button onClick={startInterview} disabled={isSubmitting}>
+        Start New Interview
+      </button>
     </div>
   );
 };
 
 export default Interview;
+
+

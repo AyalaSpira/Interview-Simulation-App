@@ -14,7 +14,10 @@ const Home: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
           <Link to="/register">Register</Link>
         </li>
         <li>
-          <Link to="/questions">Start Interview</Link>
+          <Link to="/upload-resume">Upload Resume</Link>
+        </li>
+        <li>
+          <Link to="/interview">Start Interview</Link>
         </li>
         <li>
           <Link to="/report">View Report</Link>
