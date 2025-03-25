@@ -164,8 +164,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// הגדרת פורט HTTP
-app.Urls.Add("http://localhost:5000");
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+app.Urls.Add($"http://0.0.0.0:{port}");
+
 
 app.UseCors("AllowAll");
 app.UseCors("AllowAllOrigins");
