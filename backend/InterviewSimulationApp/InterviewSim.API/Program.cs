@@ -140,6 +140,9 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // === Middleware ===
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5000"; // אם PORT לא מוגדר, תשתמש ב-5000
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -164,12 +167,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "5000"; // אם PORT לא מוגדר, תשתמש ב-5000
-builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
-
-
 app.UseCors("AllowAll");
-app.UseCors("AllowAllOrigins");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
