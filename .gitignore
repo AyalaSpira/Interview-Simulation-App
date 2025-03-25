@@ -1,0 +1,36 @@
+# Ignore Visual Studio files
+.vs/
+.vscode/
+.idea/
+
+# Ignore user-specific files
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
+# Ignore build output directories
+bin/
+obj/
+
+# Ignore ASP.NET temporary files
+App_Data/
+
+# Ignore package directories
+node_modules/
+
+# Ignore other common unwanted files
+*.log
+*.vspscc
+*.vssscc
+
+# Ignore IntelliJ IDEA files
+.idea/
+
+# Ignore NPM packages
+npm-debug.log
+yarn-error.log
+
+# Ignore temporary files created by the system
+Thumbs.db
+.DS_Store
