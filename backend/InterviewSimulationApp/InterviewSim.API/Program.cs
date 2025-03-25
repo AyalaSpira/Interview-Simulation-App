@@ -164,17 +164,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// הגדרת פורט HTTP
+app.Urls.Add("http://localhost:5000");
+
 app.UseCors("AllowAll");
 app.UseCors("AllowAllOrigins");
-
-// הסרת הפניית HTTPS
-// app.UseHttpsRedirection();
-
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-
-// הגדרת פורט HTTP
-app.Urls.Add("http://*:80");
 
 app.Run();
