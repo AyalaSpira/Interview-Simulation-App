@@ -1,6 +1,6 @@
 import { useState } from "react";
+const API_URL =  process.env.REACT_APP_API_URL;
 
-const API_URL = "http://localhost:5000/api";
 
 const RegisterForm: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -23,7 +23,7 @@ const RegisterForm: React.FC = () => {
     formData.append("resume", file);
 
     try {
-      const response = await fetch(`http://localhost:5000/api/auth/register`, {
+      const response = await fetch(`http://${API_URL}/auth/register`, {
         method: "POST",
         body: formData,
       });

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
+const API_URL =  process.env.REACT_APP_API_URL;
 
 const Report: React.FC = () => {
   const [report, setReport] = useState<string | null>(null);
 
   const fetchReport = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/interview/report', {
+      const response = await fetch('http://${API_URL}/interview/report', {
         method: 'GET',
       });
 

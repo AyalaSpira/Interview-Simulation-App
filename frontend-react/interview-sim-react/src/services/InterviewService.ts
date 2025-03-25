@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5000/api/interview";
+const API_URL =  process.env.REACT_APP_API_URL;
 // פונקציה שמתחילה ראיון
 export const startInterview = async (userId: number) => {
   try {

@@ -59,7 +59,7 @@ const Interview: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/interview/start?userId=${userId}`, {
+      const response = await fetch(`http://{apiUrl}/interview/start?userId=${userId}`, {
         method: "POST",
       });
 
@@ -97,7 +97,7 @@ const Interview: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch("https://localhost:5001/api/interview/submit-answers", {
+      const response = await fetch("https://${apiUrl}/interview/submit-answers", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const API_URL = 'http://localhost:5000/api'; // שנה מ-https ל-http
+const API_URL = '${apiUrl}'; // שנה מ-https ל-http
 
 export const RegisterForm = () => {
   const [username, setUsername] = useState('');
@@ -26,7 +26,7 @@ export const RegisterForm = () => {
     formData.append('resume', resume);  // מכניסים את הקובץ שהמשתמש העלה
   
     try {
-      const response = await fetch('http://localhost:5000/api/auth/register', {
+      const response = await fetch('http://${apiUrl}/auth/register', {
         method: 'POST',
         body: formData,  // כאן אתה שולח את ה-FormData
       });

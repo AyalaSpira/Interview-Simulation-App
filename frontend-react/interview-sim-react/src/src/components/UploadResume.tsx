@@ -1,6 +1,6 @@
 import { useState } from "react";
+const API_URL =  process.env.REACT_APP_API_URL;
 
-const API_URL = "http://localhost:5001/api";
 
 const UploadResume: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);

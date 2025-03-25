@@ -164,8 +164,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
-app.Urls.Add($"http://0.0.0.0:{port}");
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5000"; // אם PORT לא מוגדר, תשתמש ב-5000
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 
 app.UseCors("AllowAll");

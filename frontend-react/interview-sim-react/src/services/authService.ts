@@ -1,4 +1,4 @@
-const AUTH_API_URL = "http://localhost:5000/api/auth";
+const AUTH_API_URL = process.env.REACT_APP_API_URL;
 
 // רישום משתמש חדש
 // authService.ts
@@ -9,7 +9,7 @@ export const registerUser = async (username: string, email: string, password: st
   formData.append("password", password);
   formData.append("resume", resume);
 
-  const response = await fetch("http://localhost:5000/api/auth/register", {
+  const response = await fetch("http://${apiUrl}/auth/register", {
     method: "POST",
     body: formData,
   });
@@ -66,7 +66,7 @@ export const uploadResume = async (file: File) => {
   const formData = new FormData();
   formData.append("resume", file);
 
-  const response = await fetch("http://localhost:5001/api/interview/upload-resume", {
+  const response = await fetch("http://${apiUrl}/interview/upload-resume", {
     method: "POST",
     body: formData,
   });
@@ -88,7 +88,7 @@ export const uploadNewResume = async (file: File) => {
   }
 
   try {
-    const response = await fetch("http://localhost:5000/api/auth/upload-new-resume", {
+    const response = await fetch("http://${apiUrl}/auth/upload-new-resume", {
       method: "POST",
       body: formData,
       headers: {
