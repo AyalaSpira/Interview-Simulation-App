@@ -138,13 +138,11 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+var app = builder.Build();
 
 // === Middleware ===
-var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
-var url = $"http://0.0.0.0:{port}";
-builder.WebHost.UseUrls(url);
-builder.WebHost.UseUrls("http://0.0.0.0:" + port);
-var app = builder.Build();
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080"; // ברירת מחדל אם PORT לא קיים
+app.Urls.Add($"http://0.0.0.0:{port}");
 
 using (var scope = app.Services.CreateScope())
 {
