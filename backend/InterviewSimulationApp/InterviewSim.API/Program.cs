@@ -144,7 +144,6 @@ var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
 var url = $"http://0.0.0.0:{port}";
 builder.WebHost.UseUrls(url);
 builder.WebHost.UseUrls("http://0.0.0.0:" + port);
-
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
