@@ -140,8 +140,10 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // === Middleware ===
-var port = Environment.GetEnvironmentVariable("PORT") ?? "5000"; // אם PORT לא מוגדר, תשתמש ב-5000
-builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+var url = $"http://0.0.0.0:{port}";
+builder.WebHost.UseUrls(url);
+builder.WebHost.UseUrls("http://0.0.0.0:" + port);
 
 var app = builder.Build();
 
