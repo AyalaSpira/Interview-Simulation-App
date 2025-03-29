@@ -37,6 +37,8 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader());
 });
 
+
+
 // === DbContext ===
 builder.Services.AddDbContext<InterviewSimContext>(options =>
     options.UseMySql(
@@ -165,6 +167,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+
 
 app.UseCors("AllowAll");
 app.UseAuthentication();

@@ -19,7 +19,7 @@ namespace InterviewSim.Shared.Helpers
                 {
                     new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
                     new Claim(ClaimTypes.Name, username),
-                    new Claim(ClaimTypes.Email, email)  // הוספנו את המייל כאן
+                    new Claim(ClaimTypes.Email, email) 
                 }),
                 Expires = DateTime.UtcNow.AddHours(2),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
