@@ -5,7 +5,7 @@ export const startInterview = async (userId: number) => {
   try {
     console.log(`Starting interview for userId: ${userId}`); // לוג התחלת ראיון
 
-    const response = await fetch(`${API_URL}/start?userId=${userId}`, {
+    const response = await fetch(`${API_URL}interview/start?userId=${userId}`, {
       method: "POST",
     });
 
@@ -64,7 +64,7 @@ export const submitAnswers = async (userId: number, answers: string[]) => {
   try {
     console.log(`Submitting answers for userId: ${userId}`, answers);
 
-    const response = await fetch(`${API_URL}/submit-answers`, {
+    const response = await fetch(`${API_URL}/interview/submit-answers`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
