@@ -1,4 +1,5 @@
-const API_URL =  process.env.REACT_APP_API_URL;
+const API_URL = process.env.REACT_APP_API_URL;
+
 // פונקציה שמתחילה ראיון
 export const startInterview = async (userId: number) => {
   try {
@@ -37,6 +38,7 @@ export const startInterview = async (userId: number) => {
     throw error;
   }
 };
+
 // פונקציה שתפרק את הטקסט לרשימת שאלות
 const parseQuestions = (text: string) => {
   const questionRegex = /\d+\.\s\*\*(.*?)\*\*\n\s*-\s*"([^"]+)"/g;
@@ -56,6 +58,7 @@ const parseQuestions = (text: string) => {
   console.log("Parsed questions:", questions); // לוג של השאלות המפולחות
   return questions;
 };
+
 // פונקציה לשליחת תשובות
 export const submitAnswers = async (userId: number, answers: string[]) => {
   try {
@@ -81,6 +84,7 @@ export const submitAnswers = async (userId: number, answers: string[]) => {
     throw error;
   }
 };
+
 // פונקציה להורדת דוח של ראיון
 export const downloadInterviewReport = async (interviewId: number) => {
   console.log(`Downloading report for interview ID: ${interviewId}`); // לוג של הורדת דוח ראיון
@@ -105,6 +109,7 @@ export const downloadInterviewReport = async (interviewId: number) => {
     throw error;
   }
 };
+
 // פונקציה לשליחת דוח ראיון במייל
 export const sendInterviewReport = async (interviewId: number) => {
   console.log(`Sending report for interview ID: ${interviewId}`); // לוג של שליחת הדוח

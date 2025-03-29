@@ -1,7 +1,8 @@
+// authService.ts
 const AUTH_API_URL = process.env.REACT_APP_API_URL;
+console.log("API URL:", AUTH_API_URL);
 
 // רישום משתמש חדש
-// authService.ts
 export const registerUser = async (username: string, email: string, password: string, resume: File) => {
   const formData = new FormData();
   formData.append("username", username);
@@ -9,7 +10,7 @@ export const registerUser = async (username: string, email: string, password: st
   formData.append("password", password);
   formData.append("resume", resume);
 
-  const response = await fetch("http://${apiUrl}/auth/register", {
+  const response = await fetch(`${AUTH_API_URL}/auth/register`, {
     method: "POST",
     body: formData,
   });
@@ -21,11 +22,12 @@ export const registerUser = async (username: string, email: string, password: st
   return await response.json();
 };
 
+// התחברות
 export const loginUser = async (email: string, password: string) => {
   try {
     console.log("Sending login request with email:", email, "and password:", password);
 
-    const response = await fetch(`${AUTH_API_URL}/login`, {
+    const response = await fetch(`${AUTH_API_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -55,8 +57,7 @@ export const loginUser = async (email: string, password: string) => {
   }
 };
 
-
-
+// יציאה (Logout)
 export const logoutUser = () => {
   localStorage.removeItem("token");
 };
@@ -66,7 +67,7 @@ export const uploadResume = async (file: File) => {
   const formData = new FormData();
   formData.append("resume", file);
 
-  const response = await fetch("http://${apiUrl}/interview/upload-resume", {
+  const response = await fetch(`${AUTH_API_URL}/interview/upload-resume`, {
     method: "POST",
     body: formData,
   });
@@ -88,7 +89,7 @@ export const uploadNewResume = async (file: File) => {
   }
 
   try {
-    const response = await fetch("http://${apiUrl}/auth/upload-new-resume", {
+    const response = await fetch(`${AUTH_API_URL}/auth/upload-new-resume`, {
       method: "POST",
       body: formData,
       headers: {
