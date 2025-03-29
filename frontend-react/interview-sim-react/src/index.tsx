@@ -4,10 +4,13 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom';
+import { log } from 'console';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
+console.log("API URL:",process.env.VITE_API_URL);
+console.log("API URL:",process.env.REACT_APP_API_URL);
 root.render(
   <React.StrictMode>
     <BrowserRouter>
