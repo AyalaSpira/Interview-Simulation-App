@@ -172,6 +172,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+var accessKey = Environment.GetEnvironmentVariable("AccessKey");
+var secretKey = Environment.GetEnvironmentVariable("SecretKey");
+Console.WriteLine($"AccessKey: {accessKey}, SecretKey: {secretKey}");
 
 
 app.UseCors("AllowAll");
