@@ -1,5 +1,5 @@
 // authService.ts
-const AUTH_API_URL = process.env.REACT_APP_API_URL;
+const AUTH_API_URL = process.env.REACT_APP_API_URL?.replace("http://", "https://");
 console.log("API URL:", AUTH_API_URL);
 
 // רישום משתמש חדש
