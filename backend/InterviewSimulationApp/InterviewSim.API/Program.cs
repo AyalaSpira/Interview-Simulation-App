@@ -82,6 +82,9 @@ builder.Services.AddHttpClient<AIService>();
 
 // === AWS S3 ===
 builder.Services.AddSingleton<S3Service>();
+
+//ממלכי
+
 builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
 builder.Services.AddAWSService<IAmazonS3>();
 builder.Services.AddHttpContextAccessor();
