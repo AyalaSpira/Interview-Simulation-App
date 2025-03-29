@@ -17,6 +17,28 @@ using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// === בדיקת משתנים חסרים ===
+void CheckConfiguration(string key)
+{
+    var value = builder.Configuration[key];
+    if (string.IsNullOrEmpty(value))
+    {
+        throw new Exception($"Missing configuration key: {key}");
+    }
+}
+
+// בדיקה למפתחות קריטיים
+CheckConfiguration("Mail:SmtpServer");
+CheckConfiguration("Mail:SmtpUsername");
+CheckConfiguration("Mail:SmtpPassword");
+CheckConfiguration("Mail:SmtpPort");
+CheckConfiguration("ApiKey");
+CheckConfiguration("Jwt:Issuer");
+CheckConfiguration("Jwt:Audience");
+CheckConfiguration("Jwt:Key");
+
+Console.WriteLine("All required configurations are present.");
+
 // === Mail Service ===
 builder.Services.AddScoped<IMailService, SmtpMailService>(serviceProvider =>
 {
@@ -37,8 +59,6 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader());
 });
 
-
-
 // === DbContext ===
 builder.Services.AddDbContext<InterviewSimContext>(options =>
     options.UseMySql(
@@ -52,31 +72,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IInterviewRepository, InterviewRepository>();
 builder.Services.AddScoped<IInterviewService, InterviewService>();
 builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
-
 builder.Services.AddScoped<IAnswerRepository, AnswerRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
-
-// === UserService ===
-//builder.Services.AddScoped<IUserService>(serviceProvider =>
-//{
-//    var bucketName = builder.Configuration["BucketName"];
-//    if (string.IsNullOrEmpty(bucketName))
-//    {
-//        throw new Exception("BucketName is missing from configuration.");
-//    }
-
-//    //var accessKey = builder.Configuration["AccessKey"];
-//    //var secretKey = builder.Configuration["SecretKey"];
-//    //var region = builder.Configuration["Region"];
-//    //var endpoint = builder.Configuration["Endpoint"];
-//    //var model = builder.Configuration["Model"];
-
-//    var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
-//    var s3Service = serviceProvider.GetRequiredService<S3Service>();
-//    var interviewRepository = serviceProvider.GetRequiredService<IInterviewRepository>();
-
-//    return new UserService(userRepository, interviewRepository, s3Service, bucketName);
-//});
 
 // === AIService ===
 builder.Services.AddScoped<IAIService, AIService>();
@@ -84,18 +81,9 @@ builder.Services.AddHttpClient<AIService>();
 
 // === AWS S3 ===
 builder.Services.AddSingleton<S3Service>();
-
-
 builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
 builder.Services.AddAWSService<IAmazonS3>();
 builder.Services.AddHttpContextAccessor();
-
-// === OpenAI API Key ===
-var openAiApiKey = builder.Configuration["ApiKey"];
-if (string.IsNullOrEmpty(openAiApiKey))
-{
-    throw new Exception("OpenAI API Key is missing from configuration.");
-}
 
 // === JWT Authentication ===
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -144,6 +132,7 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+
 var app = builder.Build();
 
 // === Middleware ===
@@ -172,10 +161,18 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// === בדיקת משתני סביבה ===
 var accessKey = Environment.GetEnvironmentVariable("AccessKey");
 var secretKey = Environment.GetEnvironmentVariable("SecretKey");
-Console.WriteLine($"AccessKey: {accessKey}, SecretKey: {secretKey}");
 
+if (string.IsNullOrEmpty(accessKey) || string.IsNullOrEmpty(secretKey))
+{
+    Console.WriteLine("Warning: AWS credentials are missing or not set.");
+}
+else
+{
+    Console.WriteLine("AWS credentials are set correctly.");
+}
 
 app.UseCors("AllowAll");
 app.UseAuthentication();
