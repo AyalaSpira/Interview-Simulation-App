@@ -1,6 +1,8 @@
 // authService.ts
 const AUTH_API_URL = process.env.REACT_APP_API_URL?.replace("http://", "https://");
-console.log("API URL:", AUTH_API_URL);
+
+
+console.log("API URL:",process.env.VITE_API_URL);
 
 // רישום משתמש חדש
 export const registerUser = async (username: string, email: string, password: string, resume: File) => {
