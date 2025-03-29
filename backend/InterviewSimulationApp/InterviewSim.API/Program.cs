@@ -52,29 +52,31 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IInterviewRepository, InterviewRepository>();
 builder.Services.AddScoped<IInterviewService, InterviewService>();
 builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
+
 builder.Services.AddScoped<IAnswerRepository, AnswerRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 // === UserService ===
-builder.Services.AddScoped<IUserService>(serviceProvider =>
-{
-    var bucketName = builder.Configuration["BucketName"];
-    if (string.IsNullOrEmpty(bucketName))
-    {
-        throw new Exception("BucketName is missing from configuration.");
-    }
+//builder.Services.AddScoped<IUserService>(serviceProvider =>
+//{
+//    var bucketName = builder.Configuration["BucketName"];
+//    if (string.IsNullOrEmpty(bucketName))
+//    {
+//        throw new Exception("BucketName is missing from configuration.");
+//    }
 
-    var accessKey = builder.Configuration["AccessKey"];
-    var secretKey = builder.Configuration["SecretKey"];
-    var region = builder.Configuration["Region"];
-    var endpoint = builder.Configuration["Endpoint"];
-    var model = builder.Configuration["Model"];
+//    //var accessKey = builder.Configuration["AccessKey"];
+//    //var secretKey = builder.Configuration["SecretKey"];
+//    //var region = builder.Configuration["Region"];
+//    //var endpoint = builder.Configuration["Endpoint"];
+//    //var model = builder.Configuration["Model"];
 
-    var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
-    var s3Service = serviceProvider.GetRequiredService<S3Service>();
-    var interviewRepository = serviceProvider.GetRequiredService<IInterviewRepository>();
+//    var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
+//    var s3Service = serviceProvider.GetRequiredService<S3Service>();
+//    var interviewRepository = serviceProvider.GetRequiredService<IInterviewRepository>();
 
-    return new UserService(userRepository, interviewRepository, s3Service, bucketName);
-});
+//    return new UserService(userRepository, interviewRepository, s3Service, bucketName);
+//});
 
 // === AIService ===
 builder.Services.AddScoped<IAIService, AIService>();
@@ -83,7 +85,6 @@ builder.Services.AddHttpClient<AIService>();
 // === AWS S3 ===
 builder.Services.AddSingleton<S3Service>();
 
-//ממלכי
 
 builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
 builder.Services.AddAWSService<IAmazonS3>();
