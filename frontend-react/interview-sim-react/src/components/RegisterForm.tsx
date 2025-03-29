@@ -50,6 +50,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onLogin }) => {
   const navigate = useNavigate();
 
   const handleRegister = async () => {
+    console.log("API URL:",process.env.VITE_API_URL);
+    console.log("API URL:",process.env.VITE_API_URL);
+
     if (!file || !username || !password || !userEmail) {
       message.error("Please fill all fields and upload a resume.");
       return;

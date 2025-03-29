@@ -47,7 +47,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
   }, [navigate]);
 
   const handleLogin = async (values: { email: string; password: string }) => {
+    console.log("API URL:",process.env.VITE_API_URL);
+    console.log("API URL:", process.env.VITE_API_URL);
     setLoading(true);
+
     console.log("Form values:", values);  // לוג כדי לראות את הנתונים שנכנסו
 
     const response = await loginUser(values.email, values.password);  // שינוי מ-username ל-email
