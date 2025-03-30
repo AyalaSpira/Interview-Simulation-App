@@ -5,7 +5,7 @@ export const startInterview = async (userId: number) => {
   try {
     console.log(`Starting interview for userId: ${userId}`); // לוג התחלת ראיון
 
-    const response = await fetch(`${API_URL}interview/start?userId=${userId}`, {
+    const response = await fetch(`${API_URL}/interview/start?userId=${userId}`, {
       method: "POST",
     });
 

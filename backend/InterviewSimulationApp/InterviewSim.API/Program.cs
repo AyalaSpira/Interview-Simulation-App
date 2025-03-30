@@ -36,6 +36,7 @@ CheckConfiguration("ApiKey");
 CheckConfiguration("Jwt:Issuer");
 CheckConfiguration("Jwt:Audience");
 CheckConfiguration("Jwt:Key");
+CheckConfiguration("AWS:BucketName");
 
 Console.WriteLine("All required configurations are present.");
 
@@ -73,7 +74,16 @@ builder.Services.AddScoped<IInterviewRepository, InterviewRepository>();
 builder.Services.AddScoped<IInterviewService, InterviewService>();
 builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
 builder.Services.AddScoped<IAnswerRepository, AnswerRepository>();
-builder.Services.AddScoped<IUserService, UserService>();
+
+// === AWS Bucket Name ===
+var bucketName = builder.Configuration["AWS:BucketName"];
+builder.Services.AddScoped<IUserService>(provider =>
+{
+    var userRepository = provider.GetRequiredService<IUserRepository>();
+    var interviewRepository = provider.GetRequiredService<IInterviewRepository>();
+    var s3Service = provider.GetRequiredService<S3Service>();
+    return new UserService(userRepository, interviewRepository, s3Service, bucketName);
+});
 
 // === AIService ===
 builder.Services.AddScoped<IAIService, AIService>();
