@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "antd";
 import InterviewReportViewer from "./InterviewReportViewer";
+const API_URL = process.env.REACT_APP_API_URL;
 
 const ReportTextViewer = ({ interviewId }: { interviewId: number }) => {
   const [interviewText, setInterviewText] = useState<string | null>(null);
@@ -8,7 +9,7 @@ const ReportTextViewer = ({ interviewId }: { interviewId: number }) => {
 
   const fetchReportText = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/interview/get-text-report?interviewId=${interviewId}`);
+      const response = await fetch(`${API_URL}/interview/get-text-report?interviewId=${interviewId}`);
       if (!response.ok) throw new Error("Failed to fetch report.");
       const text = await response.text();
       setInterviewText(text);

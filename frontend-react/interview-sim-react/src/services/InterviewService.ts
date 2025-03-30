@@ -90,7 +90,7 @@ export const downloadInterviewReport = async (interviewId: number) => {
   console.log(`Downloading report for interview ID: ${interviewId}`); // לוג של הורדת דוח ראיון
 
   try {
-    const response = await fetch(`${API_URL}/download-report?interviewId=${interviewId}`, {
+    const response = await fetch(`${API_URL}/interview/download-report?interviewId=${interviewId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -115,7 +115,7 @@ export const sendInterviewReport = async (interviewId: number) => {
   console.log(`Sending report for interview ID: ${interviewId}`); // לוג של שליחת הדוח
 
   try {
-    const response = await fetch(`${API_URL}/send-report?interviewId=${interviewId}`, {
+    const response = await fetch(`${API_URL}/interview/send-report?interviewId=${interviewId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
