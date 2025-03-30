@@ -62,21 +62,25 @@ namespace InterviewSim.API.Controllers
         [HttpPost("submit-answers")]
         public async Task<IActionResult> SubmitAnswers([FromBody] JsonElement request)
         {
+            Console.WriteLine("SubmitAnswers POST request received");
+
             // ווידוא שהנתונים נכונים
             if (!request.TryGetProperty("userId", out JsonElement userIdElement) ||
                 !userIdElement.TryGetInt32(out int userId) ||
                 !request.TryGetProperty("answers", out JsonElement answersElement) ||
                 answersElement.ValueKind != JsonValueKind.Array)
             {
-                Console.WriteLine($"Received invalid data: Missing userId or answers.");
+                Console.WriteLine("Invalid data: Missing userId or answers");
                 return BadRequest("Invalid data: userId and answers are required.");
             }
+            Console.WriteLine($"Received userId: {userId}, answers count: {answersElement.GetArrayLength()}");
 
             // ניקוי התשובות
             List<string> answers = answersElement.EnumerateArray()
                 .Select(a => a.GetString())
                 .Where(a => a != null)
                 .ToList();
+            Console.WriteLine($"Processed answers: {answers.Count} answers");
 
             // בדיקה אם יש תשובות ואם הנתונים תקינים
             if (userId <= 0 || answers.Count == 0)
@@ -87,15 +91,14 @@ namespace InterviewSim.API.Controllers
 
             try
             {
-                // תהליך הגשת התשובות
-                Console.WriteLine($"Submitting answers for userId: {userId}");
+                Console.WriteLine($"Starting process to submit answers for userId: {userId}");
 
                 // קבלת הראיון ושמירת התשובות
                 var interview = await _interviewService.SubmitAnswersAsync(userId, answers);
 
                 if (interview == null)
                 {
-                    Console.WriteLine($"Unable to submit answers. Interview is null.");
+                    Console.WriteLine($"Unable to submit answers. Interview is null for userId: {userId}");
                     return StatusCode(404, "Unable to submit answers.");
                 }
 

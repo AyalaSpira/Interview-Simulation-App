@@ -66,39 +66,53 @@ namespace InterviewSim.BLL.Implementations
 
         public async Task<Interview> SubmitAnswersAsync(int interviewId, List<string> answers)
         {
+            Console.WriteLine($"SubmitAnswersAsync started for interviewId: {interviewId}");
+
             var interview = await _interviewRepository.GetInterviewByIdAsync(interviewId);
             if (interview == null)
             {
+                Console.WriteLine($"Interview not found for interviewId: {interviewId}");
                 throw new Exception("Interview not found");
             }
+            Console.WriteLine($"Interview found: {interview.InterviewId}");
 
             // שמירה של התשובות בראיון
+            Console.WriteLine($"Saving answers for interviewId: {interviewId}");
             await _interviewRepository.SaveInterviewAnswersAsync(interviewId, answers);
 
             var questions = await _interviewRepository.GetInterviewQuestionsAsync(interviewId);
             if (questions == null || !questions.Any())
             {
+                Console.WriteLine($"No questions found for interviewId: {interviewId}");
                 throw new Exception("No questions found for the interview");
             }
+            Console.WriteLine($"Found {questions.Count} questions for interviewId: {interviewId}");
 
             // ניתוח התשובות
+            Console.WriteLine("Starting AI analysis on answers");
             var summary = await _aiService.AnalyzeInterviewAsync(answers, questions);
             if (summary == null)
             {
+                Console.WriteLine($"Failed to analyze interview for interviewId: {interviewId}");
                 throw new Exception("Failed to analyze interview");
             }
+            Console.WriteLine("AI analysis complete");
 
             // שמירת הסיכום בראיון
+            Console.WriteLine($"Saving summary for interviewId: {interviewId}");
             await _interviewRepository.SaveInterviewReportAsync(interviewId, summary);
 
             // עדכון הסיכום והסטטוס של הראיון
+            Console.WriteLine($"Updating interview details for interviewId: {interviewId}");
             interview.Answers = answers;
             interview.Summary = summary;
             interview.Status = "Completed";
 
             await _interviewRepository.UpdateInterviewAsync(interview);
+            Console.WriteLine($"Interview updated and status set to 'Completed' for interviewId: {interviewId}");
 
             // החזרת כל פרטי הראיון
+            Console.WriteLine($"SubmitAnswersAsync completed for interviewId: {interviewId}");
             return interview;
         }
 

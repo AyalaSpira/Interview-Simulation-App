@@ -23,6 +23,8 @@ namespace InterviewSim.BLL.Implementations
             _apiKey = configuration["OpenAI_ApiKey"];  // שינוי לשם החדש
             _model = configuration["OpenAI_Model"];    // שינוי לשם החדש
             _endpoint = configuration["OpenAI_Endpoint"]; // שינוי לשם החדש
+
+            Console.WriteLine("_apiKey", _apiKey, "_model", _model, "_endpoint", _endpoint);
         }
 
 
