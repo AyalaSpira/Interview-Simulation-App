@@ -2,7 +2,10 @@
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using ServiceStack.Text;
 using System;
+using System.Configuration;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -10,9 +13,31 @@ public class S3Service
 {
     private readonly IAmazonS3 _s3Client;
 
-    public S3Service(IAmazonS3 s3Client)
+    public S3Service(IConfiguration configuration)
     {
-        _s3Client = s3Client;
+        Console.WriteLine("----------------------------------------------------------");
+        var awsOptions = configuration.GetSection("AWS");
+
+        var accessKey = Environment.GetEnvironmentVariable("AccessKey");
+        var secretKey = Environment.GetEnvironmentVariable("SecretKey");
+     
+        var region= Environment.GetEnvironmentVariable("Region");
+        if(region == null)
+        {
+            region = awsOptions["Region"];
+            Console.WriteLine("נכנס לIF");
+        }
+        var _bucketName = Environment.GetEnvironmentVariable("BucketName");
+
+        if (_bucketName == null)
+        {
+            _bucketName = awsOptions["BucketName"];
+            Console.WriteLine("נכנס לIF");
+
+        }
+        Console.WriteLine("AccessKey", accessKey, "SecretKey", secretKey);
+        Console.WriteLine("Region", region, "BucketName", _bucketName);
+        _s3Client = new AmazonS3Client(accessKey, secretKey, Amazon.RegionEndpoint.GetBySystemName(region));
     }
 
     // העלאת קובץ ל-S3 עם פרטי Bucket
