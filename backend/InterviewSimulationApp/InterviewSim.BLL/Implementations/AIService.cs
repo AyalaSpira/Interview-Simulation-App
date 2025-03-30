@@ -20,10 +20,11 @@ namespace InterviewSim.BLL.Implementations
         public AIService(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
-            _apiKey = configuration["OpenAI:ApiKey"];
-            _model = configuration["OpenAI:Model"];
-            _endpoint = configuration["OpenAI:Endpoint"];
+            _apiKey = configuration["OpenAI_ApiKey"];  // שינוי לשם החדש
+            _model = configuration["OpenAI_Model"];    // שינוי לשם החדש
+            _endpoint = configuration["OpenAI_Endpoint"]; // שינוי לשם החדש
         }
+
 
         // מקבלת תוכן רזומה ומנתחת את תחום העבודה בונה פרומט לבינה כדי להוציא את התחום מהתוכן
         public async Task<string> AnalyzeResumeAsync(string resumeContent)

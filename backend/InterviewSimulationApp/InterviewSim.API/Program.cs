@@ -32,7 +32,9 @@ CheckConfiguration("Mail:SmtpServer");
 CheckConfiguration("Mail:SmtpUsername");
 CheckConfiguration("Mail:SmtpPassword");
 CheckConfiguration("Mail:SmtpPort");
-CheckConfiguration("ApiKey");
+CheckConfiguration("OpenAI_ApiKey");  // שינוי לשם החדש
+CheckConfiguration("OpenAI_Model");   // שינוי לשם החדש
+CheckConfiguration("OpenAI_Endpoint"); // שינוי לשם החדש
 CheckConfiguration("Jwt:Issuer");
 CheckConfiguration("Jwt:Audience");
 CheckConfiguration("Jwt:Key");
