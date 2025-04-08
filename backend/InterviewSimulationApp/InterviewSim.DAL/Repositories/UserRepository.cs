@@ -169,4 +169,19 @@ public class UserRepository : IUserRepository
             await _context.SaveChangesAsync();
         }
     }
+
+    public async Task<User> GetAdminByCredentialsAsync(string email, string password)
+    {
+        var admin = await _context.Users
+            .FirstOrDefaultAsync(u => u.Email == email); // נניח שיש שדה IsAdmin
+
+        if (admin == null) return null;
+
+        // לא מצפינים סיסמה, אז השוואה רגילה
+        if (admin.Password == password)
+            return admin;
+
+        return null;
+    }
+
 }

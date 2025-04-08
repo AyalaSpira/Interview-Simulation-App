@@ -1,4 +1,6 @@
 ﻿using InterviewSim.BLL.Interfaces;
+using InterviewSim.Shared.DTOs;
+using InterviewSim.Shared.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -166,5 +168,21 @@ namespace InterviewSim.API.Controllers
                 return StatusCode(500, $"Error deleting {fileType}: {ex.Message}");
             }
         }
+
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDTO loginDto)
+        {
+            try
+            {
+                var token = await _userService.LoginAdminAsync(loginDto.Email, loginDto.Password);
+                return Ok(new { Token = token });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+        }
+
     }
 }

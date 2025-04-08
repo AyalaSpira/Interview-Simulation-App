@@ -17,5 +17,8 @@ namespace InterviewSim.BLL.Interfaces
         Task<IEnumerable<string>> GetAllResumeUrlsAsync();
         Task<IEnumerable<string>> GetAllReportUrlsAsync();
         Task<bool> DeleteFileAsync(string fileUrl, string fileType, int? interviewId = null);
+
+        Task<string> LoginAdminAsync(string email, string password);
+
     }
 }

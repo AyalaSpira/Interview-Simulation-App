@@ -2,6 +2,7 @@ using InterviewSim.BLL.Interfaces;
 using InterviewSim.DAL.Entities;
 using InterviewSim.DAL.Repositories;
 using InterviewSim.Shared.DTOs;
+using InterviewSim.Shared.Helpers;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -169,4 +170,15 @@ public class UserService : IUserService
         }
         return result;
     }
+
+    public async Task<string> LoginAdminAsync(string email, string password)
+    {
+        var admin = await _userRepository.GetAdminByCredentialsAsync(email, password);
+
+        if (admin == null)
+            throw new UnauthorizedAccessException("Email or password is incorrect.");
+
+        return JwtHelper.GenerateJwtToken(admin.UserId, admin.Username, admin.Email);
+    }
+
 }
