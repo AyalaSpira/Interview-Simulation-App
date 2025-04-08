@@ -13,5 +13,8 @@ namespace InterviewSim.DAL
         public DbSet<Interview> Interviews { get; set; }
         public DbSet<Answer> Answers { get; set; }
 
+        public DbSet<Admin> Admins { get; set; }
+
+
     }
 }
