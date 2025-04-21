@@ -1,0 +1,15 @@
+<mat-toolbar color="primary">
+  <span>האפליקציה שלי</span>
+  <span class="spacer"></span>
+  <button mat-button routerLink="/">בית</button>
+  <button mat-button routerLink="/statistics" *ngIf="isLoggedIn()">סטטיסטיקות</button>
+
+  <button mat-button routerLink="/track-users" *ngIf="isLoggedIn()">מעקב משתמשים</button>
+  <button mat-button routerLink="/manage-users" *ngIf="isLoggedIn()">ניהול משתמשים</button>
+  <button mat-button routerLink="/login" *ngIf="!isLoggedIn()">התחברות</button>
+  <button mat-button (click)="logout()" *ngIf="isLoggedIn()">התנתקות</button>
+</mat-toolbar>
+
+<div class="content">
+  <router-outlet></router-outlet>
+</div>
