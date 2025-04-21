@@ -1,0 +1,11 @@
+<div class="card">
+    <p-card header="User Statistics">
+      <div *ngIf="chartData">
+        <p-chart type="bar" [data]="chartData" [options]="chartOptions"></p-chart>
+      </div>
+      <div *ngIf="!chartData" class="loading-message">
+        Loading data...
+      </div>
+    </p-card>
+  </div>
+  

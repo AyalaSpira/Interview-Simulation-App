@@ -1,0 +1,8 @@
+{
+    "/api": {
+      "target": "https://interview-simulation-app-ar3c.onrender.com",  
+      "changeOrigin": true,
+      "logLevel": "debug"
+    }
+  }
+  

@@ -1,0 +1,40 @@
+<mat-accordion>
+    <mat-expansion-panel *ngFor="let resumeUrl of resumes">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          {{ resumeUrl | slice: resumeUrl.lastIndexOf('/') + 1 }}
+        </mat-panel-title>
+        <mat-panel-description>
+          <button mat-icon-button (click)="deleteFile(resumeUrl, 'resume'); $event.stopPropagation()">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <pre *ngIf="!resumeContents[resumeUrl]" (click)="loadContent(resumeUrl, 'resume')">טען תוכן</pre>
+      <pre *ngIf="resumeContents[resumeUrl]">{{ resumeContents[resumeUrl] }}</pre>
+    </mat-expansion-panel>
+  
+    <mat-expansion-panel *ngFor="let reportUrl of reports">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          {{ reportUrl | slice: reportUrl.lastIndexOf('/') + 1 }}
+        </mat-panel-title>
+        <mat-panel-description>
+          <button mat-icon-button (click)="deleteFile(reportUrl, 'report'); $event.stopPropagation()">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <pre *ngIf="!reportContents[reportUrl]" (click)="loadContent(reportUrl, 'report')">טען תוכן</pre>
+      <pre *ngIf="reportContents[reportUrl]">{{ reportContents[reportUrl] }}</pre>
+    </mat-expansion-panel>
+  </mat-accordion>
+  <h2>משתמשים</h2>
+<table>
+  <tr *ngFor="let user of users">
+    <td>{{ user.email }}</td>
+    <td>
+      <button mat-button color="warn" (click)="onDeleteUser(user.id)">מחק</button>
+    </td>
+  </tr>
+</table>

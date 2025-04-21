@@ -1,0 +1,28 @@
+.user-card {
+    margin: 20px;
+    padding: 20px;
+    background-color: #f5f5f5;
+  }
+  
+  table {
+    width: 100%;
+    margin-top: 10px;
+  }
+  
+  mat-header-cell, mat-cell {
+    text-align: center;
+  }
+  
+  mat-header-cell {
+    font-weight: bold;
+  }
+  
+  button.mat-icon-button {
+    background-color: #ff6f61;
+    color: white;
+  }
+  
+  button.mat-icon-button:hover {
+    background-color: #ff4e3a;
+  }
+  
