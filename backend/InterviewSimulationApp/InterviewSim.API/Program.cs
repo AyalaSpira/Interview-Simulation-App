@@ -151,31 +151,31 @@ var app = builder.Build();
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080"; // ברירת מחדל אם PORT לא קיים
 app.Urls.Add($"http://0.0.0.0:{port}");
 
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    try
-    {
-        var dbContext = services.GetRequiredService<InterviewSimContext>();
-        dbContext.Database.Migrate();
-        Console.WriteLine("Database connection is successful!");
-    }
-    catch (Exception ex)
-    {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Error connecting to the database: {Message}", ex.Message);
-    }
-}
+//using (var scope = app.Services.CreateScope())
+//{
+//    var services = scope.ServiceProvider;
+//    try
+//    {
+//        var dbContext = services.GetRequiredService<InterviewSimContext>();
+//        dbContext.Database.Migrate();
+//        Console.WriteLine("Database connection is successful!");
+//    }
+//    catch (Exception ex)
+//    {
+//        var logger = services.GetRequiredService<ILogger<Program>>();
+//        logger.LogError(ex, "Error connecting to the database: {Message}", ex.Message);
+//    }
+//}
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
+    app.UseSwagger(); 
     app.UseSwaggerUI();
 }
 
 // === בדיקת משתני סביבה ===
 var accessKey = Environment.GetEnvironmentVariable("AccessKey");
-var secretKey = Environment.GetEnvironmentVariable("SecretKey");
+var secretKey = Environment.GetEnvironmentVariable("SecretKey"); 
 
 if (string.IsNullOrEmpty(accessKey) || string.IsNullOrEmpty(secretKey))
 {
