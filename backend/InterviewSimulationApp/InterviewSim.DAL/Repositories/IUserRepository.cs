@@ -19,6 +19,6 @@ public interface IUserRepository
     Task<IEnumerable<string>> GetAllReportUrlsAsync();
     Task UpdateResumeUrlToNullAsync(string fileUrl);
 
-    Task<User> GetAdminByCredentialsAsync(string email, string password);
+    Task<Admin> GetAdminByCredentialsAsync(string email, string password);
 
 }

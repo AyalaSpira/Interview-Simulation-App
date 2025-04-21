@@ -62,7 +62,6 @@ public class AuthService : IAuthService
         if (user == null)
         {
             Console.WriteLine("User not found in database");
-            return "Invalid email or password";
         }
 
         Console.WriteLine($"User found: {user.Username}");

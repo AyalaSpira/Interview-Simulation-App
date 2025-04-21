@@ -170,14 +170,13 @@ public class UserRepository : IUserRepository
         }
     }
 
-    public async Task<User> GetAdminByCredentialsAsync(string email, string password)
+    public async Task<Admin> GetAdminByCredentialsAsync(string email, string password)
     {
-        var admin = await _context.Users
+        var admin = await _context.Admins
             .FirstOrDefaultAsync(u => u.Email == email); // נניח שיש שדה IsAdmin
 
         if (admin == null) return null;
 
-        // לא מצפינים סיסמה, אז השוואה רגילה
         if (admin.Password == password)
             return admin;
 

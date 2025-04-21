@@ -178,7 +178,7 @@ public class UserService : IUserService
         if (admin == null)
             throw new UnauthorizedAccessException("Email or password is incorrect.");
 
-        return JwtHelper.GenerateJwtToken(admin.UserId, admin.Username, admin.Email);
+        return JwtHelper.GenerateJwtToken(admin.Id, admin.Password, admin.Email);
     }
 
 }

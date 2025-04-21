@@ -36,6 +36,8 @@ namespace InterviewSim.API.Controllers
 
             return Ok(new { message = "User Registered Successfully", success = true });
         }
+
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
@@ -49,12 +51,6 @@ namespace InterviewSim.API.Controllers
             // התחברות על פי שם משתמש וסיסמה
             var token = await _authService.LoginUserAsync(request.Email, request.Password);
             Console.WriteLine("token!!!!!!!!!!!!!!!!!!!!!!!!!"+token);
-            if (string.IsNullOrEmpty(token))
-            {
-                Console.WriteLine($"Login failed for user: {request.Email}");
-                return Unauthorized("Invalid email or password");
-            }
-
             Console.WriteLine($"Login success for user: {request.Email}");
             Console.WriteLine("token", token);
 
