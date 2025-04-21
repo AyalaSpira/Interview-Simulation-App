@@ -10,27 +10,23 @@ namespace InterviewSim.API.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize(Roles = "Admin")]
-    public class Admin: ControllerBase
+    public class Admin : ControllerBase
     {
-
         private readonly S3Service _s3Service;
         private readonly IUserService _userService;
         private readonly IInterviewService _interviewService;
         private readonly string _bucketName = "";
 
-        public Admin(S3Service s3Service, IUserService userService,IInterviewService interviewService)
+        public Admin(S3Service s3Service, IUserService userService, IInterviewService interviewService)
         {
             _s3Service = s3Service;
             _userService = userService;
             _interviewService = interviewService;
         }
 
-
         [HttpDelete("delete-resume")]
         public async Task<IActionResult> DeleteResume()
         {
-
-            
             var username = GetCurrentUserName();
             var password = GetCurrentUserPassword();
             var user = await _userService.GetUserByIdAsync(int.Parse(GetCurrentUserId()));
@@ -95,12 +91,11 @@ namespace InterviewSim.API.Controllers
         public string GetCurrentUserId()
         {
             return User.Claims
-         .Where(c => c.Type == ClaimTypes.NameIdentifier)
-         .Select(c => c.Value)
-         .FirstOrDefault(v => int.TryParse(v, out _));
+                .Where(c => c.Type == ClaimTypes.NameIdentifier)
+                .Select(c => c.Value)
+                .FirstOrDefault(v => int.TryParse(v, out _));
         }
 
-        // מחיקת משתמש
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
@@ -108,8 +103,6 @@ namespace InterviewSim.API.Controllers
             return result ? Ok() : NotFound("User not found");
         }
 
-
-        // פונקציה להחזיר את כל כתובות ה-URL של הרזומים
         [HttpGet("resumes")]
         public async Task<ActionResult<IEnumerable<string>>> GetResumes()
         {
@@ -124,7 +117,6 @@ namespace InterviewSim.API.Controllers
             }
         }
 
-        // פונקציה להחזיר את כל כתובות ה-URL של הדוחות
         [HttpGet("reports")]
         public async Task<ActionResult<IEnumerable<string>>> GetReports()
         {
@@ -138,17 +130,16 @@ namespace InterviewSim.API.Controllers
                 return StatusCode(500, $"Error retrieving report URLs: {ex.Message}");
             }
         }
+
         [HttpDelete("delete-file")]
         public async Task<IActionResult> DeleteFile([FromQuery] string fileUrl, [FromQuery] string fileType, [FromQuery] int? interviewId)
         {
             try
             {
-                // מחיקת הקובץ מ-S3
                 var success = await _s3Service.DeleteFileByUrlAsync(fileUrl, _bucketName);
 
                 if (success)
                 {
-                    // עדכון ה-Resume או ה-Report ל-NULL
                     if (fileType == "resume")
                     {
                         await _userService.DeleteFileAsync(fileUrl, "resume");
@@ -169,7 +160,7 @@ namespace InterviewSim.API.Controllers
             }
         }
 
-
+        [AllowAnonymous] // ✅ זה השינוי היחיד שצריך
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO loginDto)
         {
@@ -183,6 +174,5 @@ namespace InterviewSim.API.Controllers
                 return Unauthorized(new { message = ex.Message });
             }
         }
-
     }
 }
