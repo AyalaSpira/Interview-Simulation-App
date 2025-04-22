@@ -72,6 +72,8 @@ namespace InterviewSim.API.Controllers
             return Ok(users);
         }
 
+        [NonAction]
+
         public string GetCurrentUserName()
         {
             var userNameClaim = User.FindFirst(ClaimTypes.Name);
@@ -81,6 +83,7 @@ namespace InterviewSim.API.Controllers
             }
             return userNameClaim.Value;
         }
+        [NonAction]
 
         public string GetCurrentUserPassword()
         {
@@ -91,6 +94,7 @@ namespace InterviewSim.API.Controllers
             }
             return passwordClaim.Value;
         }
+        [NonAction]
 
         public string GetCurrentUserId()
         {
