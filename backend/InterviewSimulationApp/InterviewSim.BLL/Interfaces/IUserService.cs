@@ -20,5 +20,9 @@ namespace InterviewSim.BLL.Interfaces
 
         Task<string> LoginAdminAsync(string email, string password);
 
+
+        Task AddUserAsync(UserDTO userDto);
+        Task UpdateUserByAdminAsync(UserDTO userDto);
+
     }
 }

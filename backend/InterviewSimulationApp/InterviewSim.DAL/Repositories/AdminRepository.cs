@@ -17,17 +17,5 @@ namespace InterviewSim.DAL.Repositories
             _context = context;
         }
 
-        public async Task<Admin> GetAdminByCredentialsAsync(string email, string password)
-        {
-            var admin = await _context.Admins
-                .FirstOrDefaultAsync(u => u.Email == email); // נניח שיש שדה IsAdmin
-
-            if (admin == null) return null;
-
-            if (admin.Password == password)
-                return admin;
-
-            return null;
-        }
     }
 }

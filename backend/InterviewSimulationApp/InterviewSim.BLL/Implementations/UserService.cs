@@ -181,4 +181,32 @@ public class UserService : IUserService
         return JwtHelper.GenerateJwtToken(admin.Id, admin.Password, admin.Email);
     }
 
+
+    public async Task AddUserAsync(UserDTO userDto)
+    {
+        var user = new User
+        {
+            Username = userDto.Name,
+            Email = userDto.Email,
+            ResumePath = userDto.ResumePath ?? string.Empty,
+            Password = "123456" // או קלט אחר או מחולל סיסמאות
+        };
+
+        await _userRepository.AddUserAsync(user);
+    }
+
+    public async Task UpdateUserByAdminAsync(UserDTO userDto)
+    {
+        var existingUser = await _userRepository.GetUserByIdAsync(userDto.UserId);
+        if (existingUser == null)
+            throw new InvalidOperationException("User not found.");
+
+        existingUser.Name = userDto.Name;
+        existingUser.Email = userDto.Email;
+        existingUser.ResumePath = userDto.ResumePath;
+
+        await _userRepository.UpdateUserAsync(existingUser);
+    }
+
+
 }
