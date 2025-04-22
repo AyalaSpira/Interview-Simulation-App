@@ -1,9 +1,11 @@
-﻿using InterviewSim.BLL.Interfaces;
+﻿using InterviewSim.BLL.Implementations;
+using InterviewSim.BLL.Interfaces;
 using InterviewSim.Shared.DTOs;
 using InterviewSim.Shared.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using  InterviewSim.BLL.Implementations;
 
 namespace InterviewSim.API.Controllers
 {
@@ -14,14 +16,16 @@ namespace InterviewSim.API.Controllers
     {
         private readonly S3Service _s3Service;
         private readonly IUserService _userService;
+        private readonly AdminService _AdminService;
         private readonly IInterviewService _interviewService;
         private readonly string _bucketName = "";
 
-        public Admin(S3Service s3Service, IUserService userService, IInterviewService interviewService)
+        public Admin(S3Service s3Service, IUserService userService, IInterviewService interviewService, AdminService adminService)
         {
             _s3Service = s3Service;
             _userService = userService;
             _interviewService = interviewService;
+            _AdminService = adminService;
         }
 
         [HttpDelete("delete-resume")]
@@ -166,7 +170,7 @@ namespace InterviewSim.API.Controllers
         {
             try
             {
-                var token = await _userService.LoginAdminAsync(loginDto.Email, loginDto.Password);
+                var token = await _AdminService.LoginAdminAsync(loginDto.Email, loginDto.Password);
                 return Ok(new { Token = token });
             }
             catch (UnauthorizedAccessException ex)
