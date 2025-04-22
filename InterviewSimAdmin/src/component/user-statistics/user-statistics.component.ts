@@ -32,32 +32,33 @@ export class UserStatisticsComponent implements OnInit {
   constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
-    // נתוני דמו במקום קריאה ל-API
-    const users = [
-      { email: 'user1@example.com', summary: { mark: 85 } },
-      { email: 'user2@example.com', summary: { mark: 10 }},
-      { email: 'user3@example.com', summary: { mark: 70 } },
-      // הוסף עוד משתמשים דמויים כרצונך
-    ];
+    this.loadUsers();
+    // // נתוני דמו במקום קריאה ל-API
+    // const users = [
+    //   { email: 'user1@example.com', summary: { mark: 85 } },
+    //   { email: 'user2@example.com', summary: { mark: 10 }},
+    //   { email: 'user3@example.com', summary: { mark: 70 } },
+    //   // הוסף עוד משתמשים דמויים כרצונך
+    // ];
   
-    const labels = users.map((user: any) => user.email);
-    const scores = users.map((user: any) => this.calculateMark(user.summary));
+    // const labels = users.map((user: any) => user.email);
+    // const scores = users.map((user: any) => this.calculateMark(user.summary));
   
-    this.chartData = {
-      labels,
-      datasets: [
-        {
-          label: 'User Marks',
-          data: scores,
-          backgroundColor: '#42A5F5'
-        }
-      ]
-    };
+    // this.chartData = {
+    //   labels,
+    //   datasets: [
+    //     {
+    //       label: 'User Marks',
+    //       data: scores,
+    //       backgroundColor: '#42A5F5'
+    //     }
+    //   ]
+    // };
   
-    this.chartOptions = {
-      responsive: true,
-      maintainAspectRatio: false
-    };
+    // this.chartOptions = {
+    //   responsive: true,
+    //   maintainAspectRatio: false
+    // };
   }
   
 
