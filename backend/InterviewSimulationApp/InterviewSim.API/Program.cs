@@ -95,6 +95,16 @@ builder.Services.AddScoped<IUserService>(provider =>
     return new UserService(userRepository, interviewRepository, s3Service, bucketName);
 });
 
+// === AdminService ===
+builder.Services.AddScoped<AdminService>(provider =>
+{
+    var userRepo = provider.GetRequiredService<IUserRepository>();
+    var interviewRepo = provider.GetRequiredService<IInterviewRepository>();
+    var s3Service = provider.GetRequiredService<S3Service>();
+    var bucketName = builder.Configuration["AWS:BucketName"];
+    return new AdminService(userRepo, interviewRepo, s3Service, bucketName);
+});
+
 // === AIService ===
 builder.Services.AddScoped<IAIService, AIService>();
 builder.Services.AddHttpClient<AIService>();

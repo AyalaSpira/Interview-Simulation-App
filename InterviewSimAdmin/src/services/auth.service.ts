@@ -87,7 +87,7 @@ export class AuthService {
   }
 
   login(credentials: any): Observable<User> {
-    return this.http.post<User>('https://interview-simulation-app-ar3c.onrender.com/api/admin', credentials);
+    return this.http.post<User>('https://interview-simulation-app-ar3c.onrender.com/api/admin/login', credentials);
   }
 
   getUsers(): Observable<any[]> {

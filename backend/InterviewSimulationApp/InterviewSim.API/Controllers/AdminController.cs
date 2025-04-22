@@ -12,7 +12,7 @@ namespace InterviewSim.API.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize(Roles = "Admin")]
-    public class Admin : ControllerBase
+    public class AdminController : ControllerBase
     {
         private readonly S3Service _s3Service;
         private readonly IUserService _userService;
@@ -20,7 +20,7 @@ namespace InterviewSim.API.Controllers
         private readonly IInterviewService _interviewService;
         private readonly string _bucketName = "";
 
-        public Admin(S3Service s3Service, IUserService userService, IInterviewService interviewService, AdminService adminService)
+        public AdminController(S3Service s3Service, IUserService userService, IInterviewService interviewService, AdminService adminService)
         {
             _s3Service = s3Service;
             _userService = userService;
