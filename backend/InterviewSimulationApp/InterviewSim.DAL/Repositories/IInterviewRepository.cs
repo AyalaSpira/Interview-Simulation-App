@@ -29,5 +29,8 @@ namespace InterviewSim.DAL.Repositories
 
         // עדכון הסיכום ל-null
         Task UpdateReportToNullAsync(string fileUrl);
+
+        Task<IEnumerable<Interview>> GetInterviewsByUserIdAsync(int userId);
+
     }
 }
