@@ -140,8 +140,9 @@ public class AuthService : IAuthService
 
         var handler = new JwtSecurityTokenHandler();
         var jsonToken = handler.ReadToken(token) as JwtSecurityToken;
-        var userIdClaim = jsonToken?.Claims.FirstOrDefault(c => c.Type == "sub")?.Value ??
-                          jsonToken?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        var userIdClaim = jsonToken?.Claims.FirstOrDefault(c =>
+            c.Type == ClaimTypes.NameIdentifier)?.Value;
+
 
         if (string.IsNullOrEmpty(userIdClaim))
         {

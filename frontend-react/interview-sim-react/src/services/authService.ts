@@ -1,4 +1,7 @@
 // authService.ts
+
+import { toast } from "react-toastify";
+
 const AUTH_API_URL = process.env.REACT_APP_API_URL?.replace("http://", "https://");
 
 
@@ -69,7 +72,7 @@ export const uploadResume = async (file: File) => {
   const formData = new FormData();
   formData.append("resume", file);
 
-  const response = await fetch(`${AUTH_API_URL}/interview/upload-resume`, {
+  const response = await fetch(`${AUTH_API_URL}/user/upload-resume`, {
     method: "POST",
     body: formData,
   });
@@ -77,6 +80,8 @@ export const uploadResume = async (file: File) => {
   if (!response.ok) throw new Error("Failed to upload resume");
   return response.json();
 };
+
+// העלאת קורות חיים חדשים
 
 // העלאת קורות חיים חדשים
 export const uploadNewResume = async (file: File) => {
@@ -87,7 +92,8 @@ export const uploadNewResume = async (file: File) => {
 
   if (!token) {
     console.error("No token found in localStorage");
-    return;
+    toast.error("לא נמצא טוקן, יש להתחבר מחדש");
+    return null;
   }
 
   try {
@@ -99,14 +105,34 @@ export const uploadNewResume = async (file: File) => {
       },
     });
 
+    const contentType = response.headers.get("content-type");
+
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`Server Error: ${errorData.error || "Unknown error"}`);
+      let errorMessage = "Unknown error";
+      if (contentType && contentType.includes("application/json")) {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorMessage;
+      } else {
+        const text = await response.text();
+        errorMessage = text || errorMessage;
+      }
+      toast.error(`שגיאה בהעלאת קובץ: ${errorMessage}`);
+      throw new Error(`Server Error: ${errorMessage}`);
     }
 
-    const data = await response.json();
-    return data;
+    if (contentType && contentType.includes("application/json")) {
+      const data = await response.json();
+      toast.success("קובץ הועלה בהצלחה!");
+      return data;
+    } else {
+      const text = await response.text();
+      toast.success("קובץ הועלה בהצלחה (תגובה לא בפורמט JSON)");
+      return { message: text };
+    }
+    
   } catch (error) {
     console.error("Error uploading resume:", error);
+    toast.error("אירעה שגיאה כללית בהעלאת קובץ");
+    return null;
   }
 };
