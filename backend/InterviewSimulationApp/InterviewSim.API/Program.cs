@@ -54,21 +54,33 @@ builder.Services.AddScoped<IMailService, SmtpMailService>(serviceProvider =>
 });
 
 // === CORS ===
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("AllowAll", policy =>
+//    {
+//        policy
+//            .WithOrigins(
+//                "http://localhost:3000", // React
+//                "http://localhost:4200",
+//               " https://interview-simulation-app-react.onrender.com"
+//            )
+//            .AllowAnyHeader()
+//            .AllowAnyMethod()
+//            .AllowCredentials(); // אם את שולחת בקשות עם cookies או headers כמו Authorization
+//    });
+//});
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy
-            .WithOrigins(
-                "http://localhost:3000", // React
-                "http://localhost:4200",
-               " https://interview-simulation-app-react.onrender.com"
-            )
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials(); // אם את שולחת בקשות עם cookies או headers כמו Authorization
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
+
 
 // === DbContext ===
 builder.Services.AddDbContext<InterviewSimContext>(options =>

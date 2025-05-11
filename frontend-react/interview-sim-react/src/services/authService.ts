@@ -97,7 +97,8 @@ export const uploadNewResume = async (file: File) => {
   }
 
   try {
-    const response = await fetch(`${AUTH_API_URL}/auth/upload-new-resume`, {
+    const response = await fetch(`${AUTH_API_URL}/user/upload-resume
+`, {
       method: "POST",
       body: formData,
       headers: {
