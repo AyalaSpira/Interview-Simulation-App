@@ -71,10 +71,14 @@ export const logoutUser = () => {
 export const uploadResume = async (file: File) => {
   const formData = new FormData();
   formData.append("resume", file);
+  const token = localStorage.getItem("token");
 
   const response = await fetch(`${AUTH_API_URL}/user/upload-resume`, {
     method: "POST",
     body: formData,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    }
   });
 
   if (!response.ok) throw new Error("Failed to upload resume");
@@ -97,8 +101,7 @@ export const uploadNewResume = async (file: File) => {
   }
 
   try {
-    const response = await fetch(`${AUTH_API_URL}/user/upload-resume
-`, {
+    const response = await fetch(`${AUTH_API_URL}/user/upload-resume`, {
       method: "POST",
       body: formData,
       headers: {
