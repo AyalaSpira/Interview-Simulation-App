@@ -221,8 +221,9 @@ else
 {
     Console.WriteLine("AWS credentials are set correctly.");
 }
+app.UseCors("MyPolicy");
 
-app.UseCors("AllowAll");
+//app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 
