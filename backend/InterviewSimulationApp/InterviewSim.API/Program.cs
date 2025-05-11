@@ -14,6 +14,7 @@ using MailKit;
 using IMailService = InterviewSim.BLL.Interfaces.IMailService;
 using InterviewSim.BLL.Services;
 using Microsoft.Extensions.Logging;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -72,14 +73,19 @@ builder.Services.AddScoped<IMailService, SmtpMailService>(serviceProvider =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
-    });
+    options.AddPolicy("MyPolicy",
+        builder =>
+        {
+            builder.WithOrigins(
+                "http://localhost:3000", // React
+                "http://localhost:4200", // Angular או כל פרויקט אחר
+                "https://interview-simulation-app-react.onrender.com") // הכתובת של היישום שלך ברנדר
+                .AllowCredentials()
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
 });
+
 
 
 // === DbContext ===
