@@ -14,7 +14,6 @@ using MailKit;
 using IMailService = InterviewSim.BLL.Interfaces.IMailService;
 using InterviewSim.BLL.Services;
 using Microsoft.Extensions.Logging;
-using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,38 +54,21 @@ builder.Services.AddScoped<IMailService, SmtpMailService>(serviceProvider =>
 });
 
 // === CORS ===
-//builder.Services.AddCors(options =>
-//{
-//    options.AddPolicy("AllowAll", policy =>
-//    {
-//        policy
-//            .WithOrigins(
-//                "http://localhost:3000", // React
-//                "http://localhost:4200",
-//               " https://interview-simulation-app-react.onrender.com"
-//            )
-//            .AllowAnyHeader()
-//            .AllowAnyMethod()
-//            .AllowCredentials(); // אם את שולחת בקשות עם cookies או headers כמו Authorization
-//    });
-//});
-
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("MyPolicy",
-        builder =>
-        {
-            builder.WithOrigins(
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy
+            .WithOrigins(
                 "http://localhost:3000", // React
-                "http://localhost:4200", // Angular או כל פרויקט אחר
-                "https://interview-simulation-app-react.onrender.com") // הכתובת של היישום שלך ברנדר
-                .AllowCredentials()
-                .AllowAnyHeader()
-                .AllowAnyMethod();
-        });
+                "http://localhost:4200",
+               " https://interview-simulation-app-react.onrender.com"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials(); // אם את שולחת בקשות עם cookies או headers כמו Authorization
+    });
 });
-
-
 
 // === DbContext ===
 builder.Services.AddDbContext<InterviewSimContext>(options =>
@@ -221,9 +203,8 @@ else
 {
     Console.WriteLine("AWS credentials are set correctly.");
 }
-app.UseCors("MyPolicy");
 
-//app.UseCors("AllowAll");
+app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 
