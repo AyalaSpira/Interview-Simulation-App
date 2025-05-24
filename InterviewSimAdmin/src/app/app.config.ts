@@ -2,7 +2,8 @@ import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection } fr
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { AuthInterceptor } from './auth.interceptor';
 import { HttpClientModule } from '@angular/common/http'; // ✅ חדש
 
 // מודולים של Angular Material
@@ -19,13 +20,19 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideAnimationsAsync(),
     importProvidersFrom(
-      HttpClientModule,          // ✅ חדש
+      HttpClientModule,
       MatToolbarModule,
       MatCardModule,
       MatInputModule,
       MatFormFieldModule,
       MatButtonModule,
       MatIconModule
-    )
+    ),
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true
+    }
   ]
 };
+
