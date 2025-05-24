@@ -95,4 +95,12 @@ public class InterviewRepository : IInterviewRepository
             await _context.SaveChangesAsync();
         }
     }
+
+    // שליפת כל הראיונות של משתמש לפי מזהה
+    public async Task<IEnumerable<Interview>> GetInterviewsByUserIdAsync(int userId)
+    {
+        return await _context.Interviews
+            .Where(i => i.UserId == userId)
+            .ToListAsync();
+    }
 }

@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using InterviewSim.BLL.Interfaces;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public class UserController : ControllerBase
 {
     private readonly S3Service _s3Service;

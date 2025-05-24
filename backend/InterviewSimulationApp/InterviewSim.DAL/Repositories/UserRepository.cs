@@ -69,18 +69,7 @@ public class UserRepository : IUserRepository
         };
     }
 
-    public async Task AddUserAsync(User newUser)
-    {
-        if (newUser == null)
-        {
-            throw new ArgumentNullException(nameof(newUser), "User cannot be null.");
-        }
-
-        // הצפנת הסיסמה לפני שמירת המשתמש
-        newUser.Password = PasswordHelper.HashPassword(newUser.Password);
-        await _context.Users.AddAsync(newUser);
-        await _context.SaveChangesAsync();
-    }
+   
     public async Task<User> GetUserEntityByEmailAsync(string email)
     {
         var a= await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
@@ -181,6 +170,35 @@ public class UserRepository : IUserRepository
             return admin;
 
         return null;
+    }
+
+
+  
+
+
+    public async Task AddUserAsync(User newUser)
+    {
+        if (newUser == null)
+            throw new ArgumentNullException(nameof(newUser));
+
+        newUser.Password = PasswordHelper.HashPassword(newUser.Password);
+        await _context.Users.AddAsync(newUser);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task UpdateUserAsync(User user)
+    {
+        var existingUser = await _context.Users.FindAsync(user.UserId);
+        if (existingUser == null)
+            throw new InvalidOperationException("User not found.");
+
+        existingUser.Username = user.Username;
+        existingUser.Email = user.Email;
+        existingUser.ResumePath = user.ResumePath;
+        // לא משנים סיסמה אלא אם ממש צריך
+
+        _context.Users.Update(existingUser);
+        await _context.SaveChangesAsync();
     }
 
 }

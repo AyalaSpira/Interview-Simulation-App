@@ -33,5 +33,19 @@ namespace InterviewSim.BLL.Implementations
 
             return JwtHelper.GenerateJwtToken(admin.Id, admin.Password, admin.Email);
         }
+
+
+        public async Task<bool> DeleteUserAsync(int id)
+        {
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user == null)
+                return false;
+
+            await _userRepository.DeleteAsync(id);
+            return true;
+        }
+
+
+
     }
 }

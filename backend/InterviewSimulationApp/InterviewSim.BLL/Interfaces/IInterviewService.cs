@@ -10,5 +10,8 @@ namespace InterviewSim.BLL.Interfaces
         //Task<List<string>> GetInterviewQuestionsAsync(int interviewId);
         Task<Interview> SubmitAnswersAsync(int interviewId, List<string> answers);
         Task<Interview> GetInterviewByIdAsync(int id);
+
+        Task<int?> GetLastInterviewScoreAsync(int userId);
+
     }
 }

@@ -192,6 +192,48 @@ namespace InterviewSim.BLL.Implementations
         #endregion
 
 
+        // פונקציה לשליפת הציון של הראיון האחרון של המשתמש
+        public async Task<int?> GetLastInterviewScoreAsync(int userId)
+        {
+            // שליפת כל הראיונות של המשתמש
+            var interviews = await _interviewRepository.GetInterviewsByUserIdAsync(userId);
+
+            // אם אין ראיונות, מחזירים null
+            if (interviews == null || !interviews.Any())
+            {
+                return null;
+            }
+
+            // סדר את הראיונות לפי תאריך (הראיון האחרון יהיה הראשון)
+            var lastInterview = interviews.OrderByDescending(i => i.InterviewDate).FirstOrDefault();
+
+            // חיתוך הציון מהסיכום (אם קיים)
+            if (!string.IsNullOrEmpty(lastInterview.Summary))
+            {
+                var score = ExtractScoreFromSummary(lastInterview.Summary);
+                return score;
+            }
+
+            return null;
+        }
+
+        // פונקציה לחיתוך הציון מתוך הסיכום
+        private int? ExtractScoreFromSummary(string summary)
+        {
+            var markIndex = summary.IndexOf("MARK=");
+            if (markIndex == -1)
+            {
+                return null;
+            }
+
+            var scoreString = summary.Substring(markIndex + 5, 3).TrimEnd('%');
+            if (int.TryParse(scoreString, out int score))
+            {
+                return score;
+            }
+
+            return null;
+        }
 
     }
 }

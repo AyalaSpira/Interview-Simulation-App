@@ -107,7 +107,7 @@ namespace InterviewSim.API.Controllers
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var result = await _userService.DeleteUserAsync(id);
+            var result = await _AdminService.DeleteUserAsync(id);
             return result ? Ok() : NotFound("User not found");
         }
 
@@ -182,5 +182,34 @@ namespace InterviewSim.API.Controllers
                 return Unauthorized(new { message = ex.Message });
             }
         }
+
+        [HttpPost("add-user")]
+        public async Task<IActionResult> AddUser([FromBody] UserDTO userDto)
+        {
+            await _userService.AddUserAsync(userDto);
+            return Ok("User created successfully");
+        }
+
+        [HttpPut("update-user")]
+        public async Task<IActionResult> UpdateUser([FromBody] UserDTO userDto)
+        {
+            await _userService.UpdateUserByAdminAsync(userDto);
+            return Ok("User updated successfully");
+        }
+
+        // פונקציה לשליפת הציון מהראיון האחרון של המשתמש
+        [HttpGet("GetLastInterviewScore/{userId}")]
+        public async Task<IActionResult> GetLastInterviewScore(int userId)
+        {
+            var score = await _interviewService.GetLastInterviewScoreAsync(userId);
+
+            if (score == null)
+            {
+                return NotFound("No interview found for this user.");
+            }
+
+            return Ok(score);
+        }
+
     }
 }

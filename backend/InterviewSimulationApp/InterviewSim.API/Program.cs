@@ -62,7 +62,7 @@ builder.Services.AddCors(options =>
             .WithOrigins(
                 "http://localhost:3000", // React
                 "http://localhost:4200",
-               " https://interview-simulation-app-react.onrender.com"
+               "https://interview-simulation-app-react.onrender.com"
             )
             .AllowAnyHeader()
             .AllowAnyMethod()

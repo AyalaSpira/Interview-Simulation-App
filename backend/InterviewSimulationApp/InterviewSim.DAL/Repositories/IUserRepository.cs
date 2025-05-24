@@ -10,7 +10,6 @@ public interface IUserRepository
     Task<UserDTO> GetUserByIdAsync(int userId);
     Task<UserDTO> GetUserByEmailAsync(string email);
     Task<UserDTO> GetUserByIdAndEmailAsync(int userId, string email);
-    Task AddUserAsync(User newUser);  // שמירה ב-User
     Task SaveAsync(User user);        // עדכון ב-User
     Task UpdateUserAsync(UserDTO userDTO);  // עדכון ב-User
     Task DeleteAsync(int userId);     // מחיקה של User
@@ -21,4 +20,7 @@ public interface IUserRepository
 
     Task<Admin> GetAdminByCredentialsAsync(string email, string password);
 
+
+    Task AddUserAsync(User newUser);
+    Task UpdateUserAsync(User user);
 }
