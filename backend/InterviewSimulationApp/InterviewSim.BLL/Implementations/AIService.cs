@@ -31,15 +31,27 @@ namespace InterviewSim.BLL.Implementations
         // מקבלת תוכן רזומה ומנתחת את תחום העבודה בונה פרומט לבינה כדי להוציא את התחום מהתוכן
         public async Task<string> AnalyzeResumeAsync(string resumeContent)
         {
-            var prompt = $"Analyze the following resume and extract the candidate's primary job field and key skills. " +
-                         $"Return only the most relevant details for the field of expertise, such as job title, " +
-                         $"primary domain, and top skills based on the content of the resume: {resumeContent}";
+            var prompt = $@"
+You are a professional HR and recruitment AI assistant.
+Analyze the following resume text carefully.
+Extract ONLY the primary job title, main professional domain, and top 3 relevant skills.
+Respond in this strict JSON format ONLY, without any explanations or additional text:
+
+{{
+  ""JobTitle"": ""string"",
+  ""Domain"": ""string"",
+  ""TopSkills"": [""string"", ""string"", ""string""]
+}}
+
+Resume Text:
+{resumeContent}
+";
 
             var requestBody = new
             {
                 model = _model,
                 messages = new[] { new { role = "user", content = prompt } },
-                max_tokens = 200
+                max_tokens = 300
             };
 
             var jsonRequest = JsonSerializer.Serialize(requestBody);
@@ -55,15 +67,19 @@ namespace InterviewSim.BLL.Implementations
 
                 var responseString = await response.Content.ReadAsStringAsync();
                 var jsonResponse = JsonSerializer.Deserialize<OpenAIResponse>(responseString);
-                Console.WriteLine("------------------------------------");
-                Console.WriteLine(jsonResponse?.Choices?[0].Message?.Content.Trim());
-                return jsonResponse?.Choices?[0].Message?.Content.Trim() ?? "Unable to extract job field.";
+
+                var aiResponse = jsonResponse?.Choices?[0].Message?.Content.Trim();
+
+                Console.WriteLine("AI Resume Analysis Result:\n" + aiResponse);
+
+                return aiResponse ?? "Unable to extract job field.";
             }
             catch (Exception ex)
             {
                 return $"Error analyzing resume: {ex.Message}";
             }
         }
+
 
         //GenerateQuestionsFromAI-שולחת לבינה 2 פרומט אחת אישי ואחת מקצועי
         public async Task<List<string>> GenerateQuestionsAsync(string category, int numberOfQuestions = 5)
