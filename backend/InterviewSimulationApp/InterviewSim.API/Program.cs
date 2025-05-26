@@ -1,4 +1,4 @@
-using Amazon.S3;
+ο»Ώusing Amazon.S3;
 using InterviewSim.BLL.Implementations;
 using InterviewSim.BLL.Interfaces;
 using InterviewSim.DAL;
@@ -14,10 +14,11 @@ using MailKit;
 using IMailService = InterviewSim.BLL.Interfaces.IMailService;
 using InterviewSim.BLL.Services;
 using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// === αγιχϊ ξωϊπιν ηρψιν ===
+// === Χ‘Χ“Χ™Χ§Χª ΧΧ©ΧªΧ Χ™Χ Χ—Χ΅Χ¨Χ™Χ ===
 void CheckConfiguration(string key)
 {
     var value = builder.Configuration[key];
@@ -27,14 +28,14 @@ void CheckConfiguration(string key)
     }
 }
 
-// αγιχδ μξτϊηεϊ χψιθιιν
+// Χ‘Χ“Χ™Χ§Χ” ΧΧΧ¤ΧªΧ—Χ•Χª Χ§Χ¨Χ™ΧΧ™Χ™Χ
 CheckConfiguration("Mail:SmtpServer");
 CheckConfiguration("Mail:SmtpUsername");
 CheckConfiguration("Mail:SmtpPassword");
 CheckConfiguration("Mail:SmtpPort");
-CheckConfiguration("OpenAI_ApiKey");  // ωιπει μων δηγω
-CheckConfiguration("OpenAI_Model");   // ωιπει μων δηγω
-CheckConfiguration("OpenAI_Endpoint"); // ωιπει μων δηγω
+CheckConfiguration("OpenAI_ApiKey");  // Χ©Χ™Χ Χ•Χ™ ΧΧ©Χ Χ”Χ—Χ“Χ©
+CheckConfiguration("OpenAI_Model");   // Χ©Χ™Χ Χ•Χ™ ΧΧ©Χ Χ”Χ—Χ“Χ©
+CheckConfiguration("OpenAI_Endpoint"); // Χ©Χ™Χ Χ•Χ™ ΧΧ©Χ Χ”Χ—Χ“Χ©
 CheckConfiguration("Jwt:Issuer");
 CheckConfiguration("Jwt:Audience");
 CheckConfiguration("Jwt:Key");
@@ -68,7 +69,7 @@ builder.Services.AddCors(options =>
             )
             .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowCredentials(); // ΰν ΰϊ ωεμηϊ αχωεϊ ςν cookies ΰε headers λξε Authorization
+            .AllowCredentials(); // ΧΧ ΧΧª Χ©Χ•ΧΧ—Χª Χ‘Χ§Χ©Χ•Χª ΧΆΧ cookies ΧΧ• headers Χ›ΧΧ• Authorization
     });
 });
 
@@ -117,24 +118,24 @@ builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
 builder.Services.AddAWSService<IAmazonS3>();
 builder.Services.AddHttpContextAccessor();
 
-// === JWT Authentication ===
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
+            ValidateIssuer = false, // β… Χ©Χ Χ” Χ-false: Χ”ΧΧ•Χ§Χ Χ©ΧΧ ΧΧ ΧΧ›Χ™Χ Issuer Χ›Χ¨Χ’ΧΆ
+            ValidateAudience = false, // β… Χ©Χ Χ” Χ-false: Χ”ΧΧ•Χ§Χ Χ©ΧΧ ΧΧ ΧΧ›Χ™Χ Audience Χ›Χ¨Χ’ΧΆ
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
+            // ValidIssuer = builder.Configuration["Jwt:Issuer"], // Χ Χ™ΧªΧ ΧΧ”Χ΅Χ™Χ¨ ΧΧ ValidateIssuer=false
+            // ValidAudience = builder.Configuration["Jwt:Audience"], // Χ Χ™ΧªΧ ΧΧ”Χ΅Χ™Χ¨ ΧΧ ValidateAudience=false
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
-            )
+            ),
+            // === Χ§Χ¨Χ™ΧΧ™: Χ–Χ” ΧΧ•ΧΧ¨ ΧΧ©Χ¨Χª ΧΧ™Χ¤Χ” ΧΧ—Χ¤Χ© ΧΧª Χ”-Role Χ‘ΧΧ•Χ§Χ ===
+            RoleClaimType = ClaimTypes.Role // β… Χ”Χ•Χ΅Χ£ ΧΧ• Χ•Χ•Χ“Χ Χ©Χ–Χ” Χ§Χ™Χ™Χ
         };
     });
-
 // === Controllers ===
 builder.Services.AddControllers();
 
@@ -168,7 +169,7 @@ builder.Services.AddSwaggerGen(c =>
 var app = builder.Build();
 
 // === Middleware ===
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080"; // αψιψϊ ξηγμ ΰν PORT μΰ χιιν
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080"; // Χ‘Χ¨Χ™Χ¨Χª ΧΧ—Χ“Χ ΧΧ PORT ΧΧ Χ§Χ™Χ™Χ
 app.Urls.Add($"http://0.0.0.0:{port}");
 
 //using (var scope = app.Services.CreateScope())
@@ -193,7 +194,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// === αγιχϊ ξωϊπι ραιαδ ===
+// === Χ‘Χ“Χ™Χ§Χª ΧΧ©ΧªΧ Χ™ Χ΅Χ‘Χ™Χ‘Χ” ===
 var accessKey = Environment.GetEnvironmentVariable("AccessKey");
 var secretKey = Environment.GetEnvironmentVariable("SecretKey");
 
