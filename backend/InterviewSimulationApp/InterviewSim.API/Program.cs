@@ -61,6 +61,8 @@ builder.Services.AddCors(options =>
         policy
             .WithOrigins(
                 "http://localhost:3000", // React
+                "http://localhost:5000", // React
+
                 "http://localhost:4200",
                "https://interview-simulation-app-react.onrender.com"
             )
@@ -187,13 +189,13 @@ app.Urls.Add($"http://0.0.0.0:{port}");
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger(); 
+    app.UseSwagger();
     app.UseSwaggerUI();
 }
 
 // === בדיקת משתני סביבה ===
 var accessKey = Environment.GetEnvironmentVariable("AccessKey");
-var secretKey = Environment.GetEnvironmentVariable("SecretKey"); 
+var secretKey = Environment.GetEnvironmentVariable("SecretKey");
 
 if (string.IsNullOrEmpty(accessKey) || string.IsNullOrEmpty(secretKey))
 {

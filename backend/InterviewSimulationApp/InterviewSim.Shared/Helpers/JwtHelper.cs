@@ -19,7 +19,7 @@ namespace InterviewSim.Shared.Helpers
                 {
                     new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
                     new Claim(ClaimTypes.Name, username),
-                    new Claim(ClaimTypes.Email, email) 
+                    new Claim(ClaimTypes.Email, email)
                 }),
                 Expires = DateTime.UtcNow.AddHours(2),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -28,6 +28,31 @@ namespace InterviewSim.Shared.Helpers
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
-    }
+
+
+        // --- הפונקציה החדשה לאדמינים ---
+        public static string GenerateAdminJwtToken(int userId, string username, string email, string role)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(SecretKey);
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+                new Claim(ClaimTypes.Name, username),
+                new Claim(ClaimTypes.Email, email),
+                new Claim(ClaimTypes.Role, role) // <-- הוספנו את התפקיד כאן!
+            };
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddHours(2),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
+        }
     }
 
+}
