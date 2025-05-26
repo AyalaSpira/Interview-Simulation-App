@@ -205,11 +205,13 @@ namespace InterviewSim.API.Controllers
 
             if (score == null)
             {
-                return NotFound("No interview found for this user.");
+                // Can return a more detailed message
+                return NotFound($"No last interview found for user {userId}, or score (MARK=) not found in summary.");
             }
 
             return Ok(score);
         }
-
     }
+
 }
+

@@ -103,4 +103,15 @@ public class InterviewRepository : IInterviewRepository
             .Where(i => i.UserId == userId)
             .ToListAsync();
     }
+
+
+
+    public async Task<Interview> GetLastInterviewByUserIdAsync(int userId)
+    {
+        // לפי הנתונים ששלחת, השדה הרלוונטי הוא InterviewDate
+        return await _context.Interviews
+                             .Where(i => i.UserId == userId)
+                             .OrderByDescending(i => i.InterviewDate) // מיון יורד לפי InterviewDate כדי לקבל את האחרון
+                             .FirstOrDefaultAsync(); // מחזיר את הראשון (האחרון בזמן) או null
+    }
 }

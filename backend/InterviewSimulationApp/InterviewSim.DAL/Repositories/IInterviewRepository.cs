@@ -32,5 +32,8 @@ namespace InterviewSim.DAL.Repositories
 
         Task<IEnumerable<Interview>> GetInterviewsByUserIdAsync(int userId);
 
+
+        Task<Interview> GetLastInterviewByUserIdAsync(int userId);
+
     }
 }
