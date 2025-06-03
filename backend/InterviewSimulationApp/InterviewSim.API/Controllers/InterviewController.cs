@@ -187,7 +187,6 @@ namespace InterviewSim.API.Controllers
                 return File(fileBytes, "application/pdf", fileName);
             }
         }
-
         [HttpPost("send-report")]
         public async Task<IActionResult> SendReport([FromQuery] int interviewId)
         {
@@ -195,16 +194,37 @@ namespace InterviewSim.API.Controllers
             var interview = await _interviewService.GetInterviewByIdAsync(interviewId);
             if (interview == null)
             {
+                Console.WriteLine($"Interview with ID {interviewId} not found.");
                 return NotFound("Interview not found.");
             }
 
-            // שליפת המייל של המשתמש
-            var user = await _userService.GetUserByIdAsync(interview.UserId); // כאן אנחנו מניחים שיש שיטה כזו ב-IUserService
-            if (user == null)
+            string userEmail = null; // אתחול המייל של המשתמש ל-null
+
+            try
             {
-                return NotFound("User not found.");
+                // שליפת המשתמש באמצעות ה-UserId מהראיון
+                var user = await _userService.GetUserByIdAsync(interview.UserId);
+
+                if (user != null && !string.IsNullOrEmpty(user.Email))
+                {
+                    // אם המשתמש נמצא ויש לו מייל, נשמור את המייל
+                    userEmail = user.Email;
+                    Console.WriteLine($"User email found: {userEmail} for userId: {interview.UserId}");
+                }
+                else
+                {
+                    // אם המשתמש לא נמצא או שאין לו מייל תקין
+                    Console.WriteLine($"User with ID {interview.UserId} not found or email is empty/null. Cannot send email.");
+                    // כאן אנחנו מחזירים שגיאה במקום לשלוח למייל דיפולטיבי
+                    return NotFound($"User with ID {interview.UserId} not found or email is missing/invalid.");
+                }
             }
-            var userEmail = "A8552245@gmail.com"; // נניח ש-User כולל את השדה Email
+            catch (Exception ex)
+            {
+                // אם קרתה שגיאה כלשהי במהלך שליפת המשתמש
+                Console.WriteLine($"Error retrieving user for ID {interview.UserId}: {ex.Message}. Cannot send email.");
+                return StatusCode(500, $"Internal server error while retrieving user email: {ex.Message}");
+            }
 
             // יצירת מסמך PDF
             using (var memoryStream = new MemoryStream())
@@ -254,18 +274,27 @@ namespace InterviewSim.API.Controllers
                 var body = "Please find attached your interview report.";
                 try
                 {
-                    await _mailService.SendEmailWithAttachmentAsync(userEmail, subject, body, fileBytes, fileName);
-                    Console.WriteLine("Email sent successfully.");
-                    return Ok("Email sent successfully.");
+                    // נשלח מייל רק אם userEmail אינו null (כלומר, נמצא מייל תקין)
+                    if (userEmail != null) // בדיקה וודאית למרות שלוגיקת ה-try-catch כבר מטפלת בזה
+                    {
+                        await _mailService.SendEmailWithAttachmentAsync(userEmail, subject, body, fileBytes, fileName);
+                        Console.WriteLine($"Email sent successfully to {userEmail}.");
+                        return Ok($"Email sent successfully to {userEmail}.");
+                    }
+                    else
+                    {
+                        // מקרה זה לא אמור לקרות אם הלוגיקה של ה-try-catch נכונה
+                        Console.WriteLine($"An unexpected error occurred: userEmail is null. Cannot send email.");
+                        return StatusCode(500, "An unexpected error prevented sending the email.");
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error sending email: {ex}");
+                    Console.WriteLine($"Error sending email to {userEmail}: {ex}");
                     return StatusCode(500, $"Error sending email: {ex.Message}");
                 }
             }
         }
-
         [HttpGet("get-text-report")]
         public async Task<IActionResult> GetTextReport([FromQuery] int interviewId)
         {
