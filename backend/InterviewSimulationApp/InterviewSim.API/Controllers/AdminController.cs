@@ -334,21 +334,27 @@ namespace InterviewSim.API.Controllers
             var users = await _userService.GetAllUsersAsync();
             return Ok(users);
         }
-
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
             try
             {
                 var result = await _userService.DeleteUserAsync(id);
-                return result ? Ok("User deleted successfully.") : NotFound("User not found.");
+                if (result)
+                {
+                    return NoContent(); 
+                }
+                else
+                {
+                    return NotFound("User not found.");
+                }
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error deleting user: {ex.Message}");
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-
         [HttpGet("resumes")]
         public async Task<ActionResult<IEnumerable<string>>> GetResumes()
         {
