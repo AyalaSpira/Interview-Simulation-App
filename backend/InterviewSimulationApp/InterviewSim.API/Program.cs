@@ -74,7 +74,7 @@ builder.Services.AddCors(options =>
 });
 
 // === DbContext ===
-builder.Services.AddDbContext<InterviewSimContext>(options =>
+builder.Services.AddDbContextPool<InterviewSimContext>(options => // השינוי כאן ל-AddDbContextPool
     options.UseMySql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
         ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))
