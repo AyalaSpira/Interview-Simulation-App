@@ -208,9 +208,11 @@ namespace InterviewSim.BLL.Implementations
             var lastInterview = interviews.OrderByDescending(i => i.InterviewDate).FirstOrDefault();
 
             // חיתוך הציון מהסיכום (אם קיים)
-            if (!string.IsNullOrEmpty(lastInterview.Summary))
+            if (lastInterview != null && !string.IsNullOrEmpty(lastInterview.Summary))
             {
                 var score = ExtractScoreFromSummary(lastInterview.Summary);
+                Console.WriteLine("userId", userId);
+                Console.WriteLine("score", score);
                 return score;
             }
 
@@ -218,6 +220,7 @@ namespace InterviewSim.BLL.Implementations
         }
 
         // פונקציה לחיתוך הציון מתוך הסיכום
+
         private int? ExtractScoreFromSummary(string summary)
         {
             var markIndex = summary.IndexOf("MARK=");
@@ -226,10 +229,34 @@ namespace InterviewSim.BLL.Implementations
                 return null;
             }
 
-            var scoreString = summary.Substring(markIndex + 5, 3).TrimEnd('%');
-            if (int.TryParse(scoreString, out int score))
+            var startIndexForScore = markIndex + "MARK=".Length;
+            if (startIndexForScore >= summary.Length)
             {
-                return score;
+                return null;
+            }
+
+            var scoreCandidate = summary.Substring(startIndexForScore).Trim();
+
+            string numericalScoreString = "";
+            foreach (char c in scoreCandidate)
+            {
+                if (char.IsDigit(c))
+                {
+                    numericalScoreString += c;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(numericalScoreString) && int.TryParse(numericalScoreString, out int score))
+            {
+                // בדיקה שהציון נמצא בטווח 1-100
+                if (score >= 1 && score <= 100)
+                {
+                    return score;
+                }
             }
 
             return null;
