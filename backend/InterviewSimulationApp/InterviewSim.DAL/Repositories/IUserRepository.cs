@@ -47,4 +47,7 @@ public interface IUserRepository
     Task<Admin> GetAdminByCredentialsAsync(string email, string password);
     Task AddUserAsync(User newUser); // הוספת משתמש
     Task UpdateUserAsync(User user); // עדכון משתמש (User entity) - זו הפונקציה המועדפת
+
+    Task<User> GetUserEntityByIdAsync(int userId);
+
 }

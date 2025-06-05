@@ -403,7 +403,19 @@ public class UserRepository : IUserRepository
         await _context.SaveChangesAsync();
     }
 
-    // פונקציה זו טובה לעדכון User Entity מלא
+    public async Task<User> GetUserEntityByIdAsync(int userId)
+    {
+        var userEntity = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+        if (userEntity != null)
+        {
+            Console.WriteLine($"🔍 נמצאה ישות משתמש עבור ID: {userId}, Email: {userEntity.Email}");
+        }
+        else
+        {
+            Console.WriteLine($"⚠️ לא נמצאה ישות משתמש עבור ID: {userId}");
+        }
+        return userEntity;
+    }
     public async Task UpdateUserAsync(User user) // זו הפונקציה המועדפת לעדכון User Entity
     {
         if (user == null)

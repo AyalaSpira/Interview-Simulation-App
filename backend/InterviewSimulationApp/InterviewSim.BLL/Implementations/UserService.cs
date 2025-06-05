@@ -210,7 +210,6 @@
 
 
 //}
-
 using InterviewSim.BLL.Helpers;
 using InterviewSim.BLL.Interfaces;
 using InterviewSim.DAL.Entities;
@@ -246,7 +245,7 @@ public class UserService : IUserService
             throw new UnauthorizedAccessException("User not found.");
         }
 
-        return user; // GetUserByEmailAsync כבר מחזיר DTO
+        return user;
     }
 
     public async Task<UserDTO> GetUserByIdAndEmailAsync(int userId, string email)
@@ -258,7 +257,7 @@ public class UserService : IUserService
             throw new UnauthorizedAccessException("User not found.");
         }
 
-        return user; // GetUserByIdAndEmailAsync כבר מחזיר DTO
+        return user;
     }
 
     public async Task<UserDTO> GetUserByIdAsync(int userId)
@@ -270,14 +269,12 @@ public class UserService : IUserService
             throw new UnauthorizedAccessException("User not found.");
         }
 
-        return user; // GetUserByIdAsync כבר מחזיר DTO
+        return user;
     }
 
     public async Task UpdateUserResumeAsync(int userId, IFormFile resume)
     {
-        // הפונקציה הזו כנראה לעדכון קורות חיים של המשתמש עצמו
-        // ולא דרך ממשק האדמין. היא נראית תקינה.
-        var userDto = await _userRepository.GetUserByIdAsync(userId); // קבלת DTO
+        var userDto = await _userRepository.GetUserByIdAsync(userId);
         if (userDto == null) throw new InvalidOperationException("User not found.");
 
         var userEntity = new User
@@ -292,31 +289,23 @@ public class UserService : IUserService
         {
             if (!string.IsNullOrEmpty(userEntity.ResumePath))
             {
-                var oldFileKey = userEntity.ResumePath.Substring(userEntity.ResumePath.LastIndexOf("/") + 1);
-                await _s3Service.DeleteFileByUrlAsync(oldFileKey, _bucketName);
+                // שינוי כאן: מעביר את ה-URL המלא ישירות ל-DeleteFileByUrlAsync
+                await _s3Service.DeleteFileByUrlAsync(userEntity.ResumePath, _bucketName);
             }
 
             var resumeUrl = await _s3Service.UploadFileAsync(resume, _bucketName);
             userEntity.ResumePath = resumeUrl;
         }
-        await _userRepository.UpdateUserAsync(userEntity); // עדכון עם ה-Entity
+        await _userRepository.UpdateUserAsync(userEntity);
     }
 
     public async Task<List<UserDTO>> GetAllUsersAsync()
     {
-        return await _userRepository.GetAllUsersAsync(); // Repository כבר מחזיר List<UserDTO>
+        return await _userRepository.GetAllUsersAsync();
     }
 
-    // פונקציה זו כבר קיימת ב-UserRepository.
-    // אם זו הכוונה שהיא תשמש לעדכון מ-AdminPanel, אז צריך לוודא שהיא מקבלת
-    // את כל הנתונים הנדרשים (כולל סיסמה וקובץ).
-    // נשתמש בפונקציה החדשה UpdateUserByAdminAsync במקום זו לעדכון אדמין.
-    // את זו נשאיר לשימושים פנימיים אם ישנם.
     public async Task UpdateUserAsync(UserDTO userDto)
     {
-        // קוד זה כרגע מעדכן DTO בלבד ולא מטפל בסיסמה או קובץ באופן ישיר.
-        // עבור עדכון אדמין, נשתמש ב-UpdateUserByAdminAsync.
-        // אם יש מקומות אחרים שקוראים לזה, זה בסדר.
         var userEntity = new User
         {
             UserId = userDto.UserId,
@@ -334,11 +323,10 @@ public class UserService : IUserService
         if (user == null)
             return false;
 
-        // מחיקת קורות חיים מ-S3 לפני מחיקת המשתמש
         if (!string.IsNullOrEmpty(user.ResumePath))
         {
-            var fileKey = user.ResumePath.Substring(user.ResumePath.LastIndexOf("/") + 1);
-            await _s3Service.DeleteFileByUrlAsync(fileKey, _bucketName);
+            // שינוי כאן: מעביר את ה-URL המלא ישירות ל-DeleteFileByUrlAsync
+            await _s3Service.DeleteFileByUrlAsync(user.ResumePath, _bucketName);
         }
 
         await _userRepository.DeleteAsync(id);
@@ -383,89 +371,8 @@ public class UserService : IUserService
         return JwtHelper.GenerateJwtToken(admin.Id, admin.Password, admin.Email);
     }
 
-    // הוספה: פונקציה להוספת משתמש דרך האדמין עם סיסמה וקובץ קורות חיים
-    // זו הפונקציה ששונתה והותאמה ל-AddUserWithResumeAsync
-    //public async Task AddUserWithResumeAsync(string name, string email, string password, IFormFile resumeFile)
-    //{
-    //    var existingUser = await _userRepository.GetUserEntityByEmailAsync(email); // קבלת ישות, לא DTO
-    //    if (existingUser != null)
-    //    {
-    //        throw new InvalidOperationException("User with this email already exists.");
-    //    }
-
-    //    string resumePath = string.Empty;
-    //    if (resumeFile != null)
-    //    {
-    //        resumePath = await _s3Service.UploadFileAsync(resumeFile, _bucketName);
-    //    }
-
-    //    var newUser = new User
-    //    {
-    //        Username = name,
-    //        Email = email,
-    //        Password = PasswordHelper.HashPassword(password), // סיסמה מגולמת
-    //        ResumePath = resumePath
-    //    };
-
-    //    await _userRepository.AddUserAsync(newUser);
-    //}
-
-    //// הוספה: פונקציה לעדכון משתמש דרך האדמין (שם, אימייל, סיסמה אופציונלית, קורות חיים חדשים אופציונליים)
-    //// זו הפונקציה ששונתה והותאמה ל-UpdateUserByAdminAsync
-    //public async Task UpdateUserByAdminAsync(int userId, string name, string email, string? password = null, IFormFile? newResumeFile = null)
-    //{
-    //    var existingUser = await _userRepository.GetUserByIdAsync(userId); // קבלת DTO
-    //    if (existingUser == null)
-    //        throw new InvalidOperationException("User not found.");
-
-    //    var userEntity = new User
-    //    {
-    //        UserId = existingUser.UserId,
-    //        Username = name, // שם המשתמש
-    //        Email = email,
-    //        ResumePath = existingUser.ResumePath // נשמור את הנתיב הקיים כברירת מחדל
-    //    };
-
-    //    // עדכון סיסמה אם סופקה
-    //    if (!string.IsNullOrEmpty(password))
-    //    {
-    //        userEntity.Password = PasswordHelper.HashPassword(password); // סיסמה מגולמת
-    //    }
-    //    else
-    //    {
-    //        // אם לא סופקה סיסמה חדשה, נשמור את הסיסמה הקיימת מהמסד
-    //        var userFromDb = await _userRepository.GetUserEntityByEmailAsync(existingUser.Email);
-    //        if (userFromDb != null)
-    //        {
-    //            userEntity.Password = userFromDb.Password;
-    //        }
-    //    }
-
-
-    //    // טיפול בקורות חיים חדשים
-    //    if (newResumeFile != null)
-    //    {
-    //        // מחיקת קובץ קורות חיים ישן אם קיים
-    //        if (!string.IsNullOrEmpty(existingUser.ResumePath))
-    //        {
-    //            var oldFileKey = existingUser.ResumePath.Substring(existingUser.ResumePath.LastIndexOf("/") + 1);
-    //            await _s3Service.DeleteFileByUrlAsync(oldFileKey, _bucketName);
-    //        }
-    //        // העלאת קובץ קורות חיים חדש
-    //        userEntity.ResumePath = await _s3Service.UploadFileAsync(newResumeFile, _bucketName);
-    //    }
-    //    // אם לא סופק קובץ חדש, אבל רוצים למחוק את הקיים (תלוי בממשק המשתמש)
-    //    // לדוגמה, אם הממשק מאפשר "ריקון" קורות חיים:
-    //    // else if (shouldRemoveExistingResume) { userEntity.ResumePath = null; }
-
-
-    //    await _userRepository.UpdateUserAsync(userEntity); // עדכון עם ה-Entity
-    //}
-
-
     public async Task AddUserWithResumeAsync(string name, string email, string password, IFormFile? resumeFile)
     {
-        // **בדיקת ייחודיות לאימייל בלבד**
         var existingUserByEmail = await _userRepository.GetUserEntityByEmailAsync(email);
         if (existingUserByEmail != null)
         {
@@ -474,7 +381,7 @@ public class UserService : IUserService
 
         var newUser = new User
         {
-            Username = name, // שם המשתמש לא חייב להיות ייחודי
+            Username = name,
             Email = email,
             Password = PasswordHelper.HashPassword(password),
             ResumePath = string.Empty
@@ -497,7 +404,6 @@ public class UserService : IUserService
             throw new InvalidOperationException("User not found.");
         }
 
-        // **בדיקת ייחודיות לאימייל החדש בלבד (אם השתנה)**
         if (existingUserDTO.Email != email)
         {
             var userWithNewEmail = await _userRepository.GetUserEntityByEmailAsync(email);
@@ -507,20 +413,14 @@ public class UserService : IUserService
             }
         }
 
-        // קבל את ה-Entity המקורי לעדכון
-        // שים לב: GetUserEntityByEmailAsync אולי לא מספיק כאן אם האימייל משתנה והיה קיים משתמש עם האימייל הישן.
-        // עדיף למצוא לפי ה-UserId ואז לעדכן.
-        var userToUpdate = await _userRepository.GetUserByIdAsync(userId); // קבל את ה-UserDTO
-        if (userToUpdate == null) // קייס שולי אבל חשוב
+        // שינוי חשוב כאן: קבלת ישות ה-User המלאה לפי ה-ID
+        // ודא ששיטה זו (GetUserEntityByIdAsync) קיימת וממומשת ב-IUserRepository וברפוזיטורי שלך.
+        var userEntity = await _userRepository.GetUserEntityByIdAsync(userId);
+        if (userEntity == null)
         {
             throw new InvalidOperationException("Error retrieving user entity for update.");
         }
 
-        // נמיר ל-User Entity מלא כדי לעדכן דרך הריפוזיטורי
-        var userEntity = await _userRepository.GetUserEntityByEmailAsync(existingUserDTO.Email) // או GetUserEntityByIdAsync אם הייתה כזו
-                          ?? new User { UserId = existingUserDTO.UserId }; // אם לא נמצאה ישות, צור חדשה עם ה-ID
-
-        // עדכן את השדות ב-Entity
         userEntity.Username = name;
         userEntity.Email = email;
 
@@ -533,8 +433,8 @@ public class UserService : IUserService
         {
             if (!string.IsNullOrEmpty(userEntity.ResumePath))
             {
-                var oldFileKey = userEntity.ResumePath.Substring(userEntity.ResumePath.LastIndexOf("/") + 1);
-                await _s3Service.DeleteFileByUrlAsync(oldFileKey, _bucketName);
+                // שינוי כאן: מעביר את ה-URL המלא ישירות ל-DeleteFileByUrlAsync
+                await _s3Service.DeleteFileByUrlAsync(userEntity.ResumePath, _bucketName);
             }
             var newResumeUrl = await _s3Service.UploadFileAsync(newResumeFile, _bucketName);
             userEntity.ResumePath = newResumeUrl;
