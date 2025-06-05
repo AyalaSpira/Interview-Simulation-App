@@ -42,11 +42,6 @@ namespace InterviewSim.BLL.Implementations
             return true;
         }
 
-        /// <summary>
-        /// Retrieves the score (MARK=) from the summary of the user's last interview.
-        /// </summary>
-        /// <param name="userId">The ID of the user.</param>
-        /// <returns>The score as a string, or null if no interview or score is found.</returns>
         public async Task<string> GetLastInterviewScoreAsync(int userId)
         {
             var lastInterview = await _interviewRepository.GetLastInterviewByUserIdAsync(userId);

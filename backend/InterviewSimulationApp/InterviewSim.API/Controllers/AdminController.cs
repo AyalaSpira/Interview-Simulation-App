@@ -416,66 +416,60 @@ namespace InterviewSim.API.Controllers
             }
         }
 
-        // --- Add User Endpoint (without UserCreationRequest DTO) ---
         [HttpPost("add-user")]
         public async Task<IActionResult> AddUser(
-            [FromForm] string name,
-            [FromForm] string email,
-            [FromForm] string password,
-            [FromForm] IFormFile? resumeFile) // IFormFile can be null if not provided
+                   [FromForm] string name,
+                   [FromForm] string email,
+                   [FromForm] string password,
+                   [FromForm] IFormFile? resumeFile)
         {
-            // Basic validation - you might want more robust validation
             if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
             {
-                return BadRequest("Name, email, and password are required.");
+                return BadRequest(new { message = "Name, email, and password are required." }); // החזרת JSON
             }
 
             try
             {
                 await _userService.AddUserWithResumeAsync(name, email, password, resumeFile);
-                return Ok("User created successfully.");
+                return Ok(new { message = "User created successfully." }); // שינוי כאן: החזרת אובייקט JSON
             }
             catch (InvalidOperationException ex)
             {
-                return Conflict(ex.Message); // User with email already exists
+                return Conflict(new { message = ex.Message }); // החזרת JSON
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return StatusCode(500, new { message = $"Internal server error: {ex.Message}" }); // החזרת JSON
             }
         }
 
-        // --- Update User Endpoint (without UserUpdateRequest DTO) ---
         [HttpPut("update-user/{userId}")]
         public async Task<IActionResult> UpdateUser(
             int userId,
             [FromForm] string name,
             [FromForm] string email,
-            [FromForm] string? password = null, // Optional password
-            [FromForm] IFormFile? newResumeFile = null) // Optional new resume file
+            [FromForm] string? password = null,
+            [FromForm] IFormFile? newResumeFile = null)
         {
-            // Basic validation - you might want more robust validation
             if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(email))
             {
-                return BadRequest("Name and email are required for update.");
+                return BadRequest(new { message = "Name and email are required for update." });
             }
 
             try
             {
                 await _userService.UpdateUserByAdminAsync(userId, name, email, password, newResumeFile);
-                return Ok("User updated successfully.");
+                return Ok(new { message = "User updated successfully." });
             }
             catch (InvalidOperationException ex)
             {
-                return NotFound(ex.Message); // User not found
+                return NotFound(new { message = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return StatusCode(500, new { message = $"Internal server error: {ex.Message}" });
             }
         }
-
-        // --- Interview Score Endpoint ---
 
         [HttpGet("GetLastInterviewScore/{userId}")]
         public async Task<IActionResult> GetLastInterviewScore(int userId)
