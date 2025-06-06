@@ -161,10 +161,12 @@ using InterviewSim.DAL.Entities;
 using InterviewSim.Shared.DTOs;
 using InterviewSim.Shared.Helpers;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc; // נדרש עבור IActionResult ב-UploadNewResumeAsync
+using Microsoft.AspNetCore.Mvc; // Required for IActionResult
+using System; // For Exception
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks; // Explicitly add for Task<string>
 
 public class AuthService : IAuthService
 {
@@ -177,29 +179,38 @@ public class AuthService : IAuthService
         _s3Service = s3Service;
     }
 
-    // *** תיקון: שינוי סדר הפרמטרים כאן להתאמה ל-AuthController ***
     public async Task<string> RegisterUserAsync(string username, string email, string password, IFormFile resume)
     {
-        // הערה: "email" כאן הוא באמת האימייל מה-Frontend
+        Console.WriteLine($"RegisterUserAsync: Attempting to register user with email: {email}");
         var existingUserDTO = await _userRepository.GetUserByEmailAsync(email);
         if (existingUserDTO != null)
         {
-            throw new Exception("Email already exists."); // הודעה זו תיתפס ב-AuthController
+            Console.WriteLine($"RegisterUserAsync: Email {email} already exists. Registration failed.");
+            throw new Exception("Email already exists.");
         }
 
-        // "password" כאן הוא באמת הסיסמה מה-Frontend, שתעבור גיבוב
         var hashedPassword = PasswordHelper.HashPassword(password);
         string resumePath = null;
         if (resume != null)
         {
-            resumePath = await _s3Service.UploadFileAsync(resume, "ayala-spira-testpnoren");
+            try
+            {
+                resumePath = await _s3Service.UploadFileAsync(resume, "ayala-spira-testpnoren");
+                Console.WriteLine($"RegisterUserAsync: Resume uploaded to S3: {resumePath}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"RegisterUserAsync: Error uploading resume to S3: {ex.Message}");
+                // Optionally rethrow or handle more gracefully
+                throw new Exception("Error uploading resume. " + ex.Message);
+            }
         }
 
         var newUser = new User
         {
             Username = username,
-            Password = hashedPassword, // סיסמה מגובבת
-            Email = email,            // האימייל הנכון
+            Password = hashedPassword,
+            Email = email,
             ResumePath = resumePath
         };
 
@@ -210,31 +221,32 @@ public class AuthService : IAuthService
 
     public async Task<string> LoginUserAsync(string email, string password)
     {
-        Console.WriteLine($"Attempting to login with email: {email}, password: [HIDDEN]");
+        Console.WriteLine($"LoginUserAsync: Attempting to login with email: {email}, password: [HIDDEN]");
         email = email.Trim();
 
         var user = await _userRepository.GetUserEntityByEmailAsync(email);
         if (user == null)
         {
-            Console.WriteLine("User not found in database");
-            return null;
+            Console.WriteLine("LoginUserAsync: User not found in database.");
+            Console.WriteLine("LoginUserAsync: Returning null token due to user not found."); // Debug log
+            return null; // Should exit here
         }
 
-        Console.WriteLine($"User found: {user.Username}");
-        Console.WriteLine($"Password in service (hashed): {user.Password}");
-        Console.WriteLine($"Password received from user: {password}"); // הדפס את הסיסמה שהתקבלה (למטרת דיבוג בלבד, לא בפרודקשן!)
+        Console.WriteLine($"LoginUserAsync: User found: {user.Username}");
+        Console.WriteLine($"LoginUserAsync: Password in service (hashed): {user.Password}");
+        Console.WriteLine($"LoginUserAsync: Password received from user: {password}"); // !!! REMOVE IN PRODUCTION !!!
 
-        // נקודת בדיקה קריטית: האם אנחנו נכנסים לבלוק הזה?
         bool passwordMatches = PasswordHelper.VerifyPassword(password, user.Password);
-        Console.WriteLine($"Password verification result: {passwordMatches}");
+        Console.WriteLine($"LoginUserAsync: Password verification result: {passwordMatches}");
 
-        if (!passwordMatches) // שים לב לשינוי - שימוש במשתנה bool
+        if (!passwordMatches)
         {
-            Console.WriteLine("Password does not match - returning null!"); // הודעה ברורה
-            return null; // זה אמור לעצור את התהליך
+            Console.WriteLine("LoginUserAsync: Password does not match.");
+            Console.WriteLine("LoginUserAsync: Returning null token due to password mismatch."); // Debug log
+            return null; // Should exit here
         }
 
-        Console.WriteLine("Password matches, proceeding to token generation."); // הדפסה אם הסיסמה תואמת
+        Console.WriteLine("LoginUserAsync: Password matches, proceeding to token generation.");
 
         var userDto = new UserDTO
         {
@@ -247,14 +259,18 @@ public class AuthService : IAuthService
         var token = JwtHelper.GenerateJwtToken(user.UserId, user.Username, email);
         if (string.IsNullOrEmpty(token))
         {
-            Console.WriteLine("Token generation failed");
-            return null;
+            Console.WriteLine("LoginUserAsync: Token generation failed.");
+            Console.WriteLine("LoginUserAsync: Returning null token due to generation failure."); // Debug log
+            return null; // Should exit here
         }
 
-        Console.WriteLine($"🔑 Generated Token: {token}");
-        Console.WriteLine("Login success for user: " + email); // העברתי לכאן
+        Console.WriteLine($"LoginUserAsync: 🔑 Generated Token: {token}");
+        Console.WriteLine($"LoginUserAsync: Login success for user: {email}");
         return token;
     }
+
+    // This method return type was changed to IActionResult to match common Web API patterns
+    // and your usage in previous examples. Ensure your controller expects this.
     public async Task<IActionResult> UploadNewResumeAsync(HttpRequest request, IFormFile resume)
     {
         try
@@ -264,24 +280,29 @@ public class AuthService : IAuthService
             var userDTO = await _userRepository.GetUserByIdAsync(userId);
             if (userDTO == null)
             {
+                Console.WriteLine($"UploadNewResumeAsync: User with ID {userId} not found for resume upload.");
                 return new NotFoundObjectResult(new { error = "User not found." });
             }
 
             var resumeUrl = await _s3Service.UploadFileAsync(resume, "ayala-spira-testpnoren");
+            Console.WriteLine($"UploadNewResumeAsync: Resume uploaded successfully for user {userId}: {resumeUrl}");
 
             userDTO.ResumePath = resumeUrl;
 
             await _userRepository.UpdateUserAsync(userDTO);
+            Console.WriteLine($"UploadNewResumeAsync: User {userId} resume path updated in DB.");
 
             return new OkObjectResult(new { message = "Resume uploaded successfully", resumeUrl });
         }
         catch (UnauthorizedAccessException ex)
         {
+            Console.WriteLine($"UploadNewResumeAsync: Unauthorized access attempt: {ex.Message}");
             return new UnauthorizedObjectResult(new { error = ex.Message });
         }
-        catch (System.Exception ex) // הוספת טיפול כללי יותר בשגיאות
+        catch (Exception ex) // General exception catch for robustness
         {
-            return new StatusCodeResult(StatusCodes.Status500InternalServerError); // או הודעה מפורטת יותר
+            Console.WriteLine($"UploadNewResumeAsync: An unexpected error occurred: {ex.Message}");
+            return new StatusCodeResult(StatusCodes.Status500InternalServerError);
         }
     }
 
@@ -290,21 +311,37 @@ public class AuthService : IAuthService
         var tokenHeader = request.Headers["Authorization"].ToString();
         if (string.IsNullOrEmpty(tokenHeader) || !tokenHeader.StartsWith("Bearer "))
         {
+            Console.WriteLine("GetUserIdFromToken: Token is missing or invalid in header.");
             throw new UnauthorizedAccessException("Token is missing or invalid");
         }
 
         var token = tokenHeader.Replace("Bearer ", "").Trim();
-        Console.WriteLine($"🔍 Received Token: {token}");
+        Console.WriteLine($"GetUserIdFromToken: 🔍 Received Token (truncated for log): {token.Substring(0, Math.Min(token.Length, 30))}..."); // Truncate for security
 
         var handler = new JwtSecurityTokenHandler();
         var jsonToken = handler.ReadToken(token) as JwtSecurityToken;
-        var userIdClaim = jsonToken?.Claims.FirstOrDefault(c => c.Type == "nameid")?.Value;
+
+        if (jsonToken == null)
+        {
+            Console.WriteLine("GetUserIdFromToken: JWT token could not be parsed.");
+            throw new UnauthorizedAccessException("Invalid JWT token format.");
+        }
+
+        var userIdClaim = jsonToken.Claims.FirstOrDefault(c => c.Type == "nameid")?.Value;
 
         if (string.IsNullOrEmpty(userIdClaim))
         {
+            Console.WriteLine("GetUserIdFromToken: User ID claim 'nameid' not found in token.");
             throw new UnauthorizedAccessException("User ID not found in token");
         }
 
-        return int.Parse(userIdClaim);
+        if (!int.TryParse(userIdClaim, out int userId))
+        {
+            Console.WriteLine($"GetUserIdFromToken: User ID claim '{userIdClaim}' is not a valid integer.");
+            throw new UnauthorizedAccessException("Invalid user ID in token format.");
+        }
+
+        Console.WriteLine($"GetUserIdFromToken: User ID extracted: {userId}");
+        return userId;
     }
 }
