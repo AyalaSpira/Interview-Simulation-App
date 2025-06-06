@@ -210,27 +210,31 @@ public class AuthService : IAuthService
 
     public async Task<string> LoginUserAsync(string email, string password)
     {
-        Console.WriteLine($"Attempting to login with email: {email}, password: [HIDDEN]"); // אל תדפיס סיסמאות
-
+        Console.WriteLine($"Attempting to login with email: {email}, password: [HIDDEN]");
         email = email.Trim();
 
         var user = await _userRepository.GetUserEntityByEmailAsync(email);
         if (user == null)
         {
             Console.WriteLine("User not found in database");
-            return null; // או זרוק חריגה מתאימה ש-AuthController יתפוס
+            return null;
         }
 
         Console.WriteLine($"User found: {user.Username}");
-        // Console.WriteLine(user.Password,"password in service"); // שורה לא תקינה, הוסרה
         Console.WriteLine($"Password in service (hashed): {user.Password}");
+        Console.WriteLine($"Password received from user: {password}"); // הדפס את הסיסמה שהתקבלה (למטרת דיבוג בלבד, לא בפרודקשן!)
 
-        // *** תיקון: החזרת בדיקת הסיסמה שהייתה מוסתרת ***
-        if (!PasswordHelper.VerifyPassword(password, user.Password))
+        // נקודת בדיקה קריטית: האם אנחנו נכנסים לבלוק הזה?
+        bool passwordMatches = PasswordHelper.VerifyPassword(password, user.Password);
+        Console.WriteLine($"Password verification result: {passwordMatches}");
+
+        if (!passwordMatches) // שים לב לשינוי - שימוש במשתנה bool
         {
-            Console.WriteLine("Password does not match");
-            return null; // חזור null כדי לציין כשל התחברות
+            Console.WriteLine("Password does not match - returning null!"); // הודעה ברורה
+            return null; // זה אמור לעצור את התהליך
         }
+
+        Console.WriteLine("Password matches, proceeding to token generation."); // הדפסה אם הסיסמה תואמת
 
         var userDto = new UserDTO
         {
@@ -244,13 +248,13 @@ public class AuthService : IAuthService
         if (string.IsNullOrEmpty(token))
         {
             Console.WriteLine("Token generation failed");
-            return null; // חזור null במקרה של כשל בייצור טוקן
+            return null;
         }
 
         Console.WriteLine($"🔑 Generated Token: {token}");
+        Console.WriteLine("Login success for user: " + email); // העברתי לכאן
         return token;
     }
-
     public async Task<IActionResult> UploadNewResumeAsync(HttpRequest request, IFormFile resume)
     {
         try
