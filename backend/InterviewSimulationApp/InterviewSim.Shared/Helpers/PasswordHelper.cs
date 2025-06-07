@@ -1,33 +1,66 @@
-using BCrypt.Net;
+ï»¿using BCrypt.Net;
 
 namespace InterviewSim.BLL.Helpers
 {
     public static class PasswordHelper
     {
-        private const int WorkFactor = 12; // WorkFactor òáåø Bcrypt
+        private const int WorkFactor = 12; // WorkFactor ×¢×‘×•×¨ Bcrypt
 
         public static string HashPassword(string password)
         {
-            // çåæø òì éöéøú äñéñîä äçãùä òí WorkFactor
+            // ×—×•×–×¨ ×¢×œ ×™×¦×™×¨×ª ×”×¡×™×¡××” ×”×—×“×©×” ×¢× WorkFactor
             return BCrypt.Net.BCrypt.HashPassword(password, WorkFactor);
         }
 
         public static bool VerifyPassword(string password, string hashedPassword)
         {
+            Console.WriteLine("--------- Start VerifyPassword ---------");
+            Console.WriteLine("Input password: " + password);
+            Console.WriteLine("Input hashedPassword: " + hashedPassword);
+
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                Console.WriteLine("âŒ password is null or empty");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(hashedPassword))
+            {
+                Console.WriteLine("âŒ hashedPassword is null or empty");
+                return false;
+            }
+
+            Console.WriteLine("ğŸ” Checking hashedPassword format...");
+            Console.WriteLine("HashedPassword length: " + hashedPassword.Length);
+            Console.WriteLine("HashedPassword starts with: " + hashedPassword.Substring(0, Math.Min(6, hashedPassword.Length)));
+
             try
             {
-                return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
+                Console.WriteLine("âœ… Trying to verify password with hashedPassword...");
+                bool result = BCrypt.Net.BCrypt.Verify(password, hashedPassword);
+                Console.WriteLine("âœ… Verification result: " + result);
+                return result;
             }
-            catch (BCrypt.Net.SaltParseException)
+            catch (BCrypt.Net.SaltParseException ex)
             {
-                var newHashedPassword = BCrypt.Net.BCrypt.HashPassword(password, WorkFactor);
-                return BCrypt.Net.BCrypt.Verify(password, newHashedPassword);
+                Console.WriteLine("â— Caught SaltParseException!");
+                Console.WriteLine("â— Exception message: " + ex.Message);
+                Console.WriteLine("âš ï¸ Not verifying against a newly hashed password â€“ security risk");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("â— General exception during verification:");
+                Console.WriteLine("â— Exception: " + ex.GetType().Name);
+                Console.WriteLine("â— Message: " + ex.Message);
+                return false;
             }
         }
 
+
         public static string UpgradePasswordHash(string oldHashedPassword)
         {
-            // àí ä-salt äéùï ìà úåàí àå ğãøù ùãøåâ, ğéúï ìéöåø Hash çãù òí WorkFactor
+            // ×× ×”-salt ×”×™×©×Ÿ ×œ× ×ª×•×× ××• × ×“×¨×© ×©×“×¨×•×’, × ×™×ª×Ÿ ×œ×™×¦×•×¨ Hash ×—×“×© ×¢× WorkFactor
             return BCrypt.Net.BCrypt.HashPassword(oldHashedPassword, WorkFactor);
         }
     }
