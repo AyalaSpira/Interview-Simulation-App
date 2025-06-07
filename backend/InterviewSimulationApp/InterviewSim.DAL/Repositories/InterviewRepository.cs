@@ -65,6 +65,7 @@ public class InterviewRepository : IInterviewRepository
         {
             interview.Status = "Completed";
             interview.Summary = $"AI Report: {report}";
+            await UpdateInterviewAsync(interview);
             await _context.SaveChangesAsync();
         }
     }

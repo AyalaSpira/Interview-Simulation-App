@@ -102,13 +102,13 @@ namespace InterviewSim.BLL.Implementations
             Console.WriteLine($"Saving summary for interviewId: {interviewId}");
             await _interviewRepository.SaveInterviewReportAsync(interviewId, summary);
 
-            // עדכון הסיכום והסטטוס של הראיון
-            //Console.WriteLine($"Updating interview details for interviewId: {interviewId}");
-            //interview.Answers = answers;
-            //interview.Summary = summary;
-            //interview.Status = "Completed";
 
-            //await _interviewRepository.UpdateInterviewAsync(interview);
+            Console.WriteLine($"Updating interview details for interviewId: {interviewId}");
+            interview.Answers = answers;
+            interview.Summary = summary;
+            interview.Status = "Completed";
+
+            await _interviewRepository.UpdateInterviewAsync(interview);
             Console.WriteLine($"Interview updated and status set to 'Completed' for interviewId: {interviewId}");
 
             // החזרת כל פרטי הראיון
