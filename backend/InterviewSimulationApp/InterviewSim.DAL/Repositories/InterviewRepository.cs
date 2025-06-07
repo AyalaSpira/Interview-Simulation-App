@@ -51,7 +51,7 @@ public class InterviewRepository : IInterviewRepository
 
         interview.Status = "Completed"; // Update status  
         interview.Answers = answers; // Save answers  
-        await _context.SaveChangesAsync();
+      await  UpdateInterviewAsync(interview); await _context.SaveChangesAsync();
         Console.WriteLine($"Answers saved for interview {interviewId}: {string.Join(", ", answers)}");
         Console.WriteLine(interview.Answers); // Correctly return a Task instead of an object expression  
       
