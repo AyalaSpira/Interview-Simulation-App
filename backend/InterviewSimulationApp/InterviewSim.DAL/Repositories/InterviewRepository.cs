@@ -2,6 +2,7 @@ using InterviewSim.DAL.Entities;
 using InterviewSim.DAL.Repositories;
 using InterviewSim.DAL;
 using Microsoft.EntityFrameworkCore;
+using Mysqlx;
 
 public class InterviewRepository : IInterviewRepository
 {
@@ -37,9 +38,10 @@ public class InterviewRepository : IInterviewRepository
         return interview?.Questions ?? new List<string>();
     }
 
-    // שמירת תשובות
+    // Fix for CS1997: Since 'InterviewRepository.SaveInterviewAnswersAsync(int, List<string>)' is an async method that returns 'Task', a return keyword must not be followed by an object expression  
     public async Task SaveInterviewAnswersAsync(int interviewId, List<string> answers)
     {
+        Console.WriteLine("----try saved answers------");
         var interview = await _context.Interviews.FindAsync(interviewId);
         if (interview == null)
         {
@@ -47,10 +49,12 @@ public class InterviewRepository : IInterviewRepository
             throw new Exception("Interview not found.");
         }
 
-        interview.Status = "Completed"; // עדכון סטטוס
-        interview.Answers = answers; // שמירה של התשובות
+        interview.Status = "Completed"; // Update status  
+        interview.Answers = answers; // Save answers  
         await _context.SaveChangesAsync();
         Console.WriteLine($"Answers saved for interview {interviewId}: {string.Join(", ", answers)}");
+        Console.WriteLine(interview.Answers); // Correctly return a Task instead of an object expression  
+      
     }
 
     // שמירת דוח ראיון

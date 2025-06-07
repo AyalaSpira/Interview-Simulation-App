@@ -68,13 +68,13 @@ namespace InterviewSim.BLL.Implementations
         {
             Console.WriteLine($"SubmitAnswersAsync started for interviewId: {interviewId}");
 
-            var interview = await _interviewRepository.GetInterviewByIdAsync(interviewId);
-            if (interview == null)
-            {
-                Console.WriteLine($"Interview not found for interviewId: {interviewId}");
-                throw new Exception("Interview not found");
-            }
-            Console.WriteLine($"Interview found: {interview.InterviewId}");
+           var interview = await _interviewRepository.GetInterviewByIdAsync(interviewId);
+            //if (interview == null)
+            //{
+            //    Console.WriteLine($"Interview not found for interviewId: {interviewId}");
+            //    throw new Exception("Interview not found");
+            //}
+            //Console.WriteLine($"Interview found: {interview.InterviewId}");
 
             // שמירה של התשובות בראיון
             Console.WriteLine($"Saving answers for interviewId: {interviewId}");
@@ -103,12 +103,12 @@ namespace InterviewSim.BLL.Implementations
             await _interviewRepository.SaveInterviewReportAsync(interviewId, summary);
 
             // עדכון הסיכום והסטטוס של הראיון
-            Console.WriteLine($"Updating interview details for interviewId: {interviewId}");
-            interview.Answers = answers;
-            interview.Summary = summary;
-            interview.Status = "Completed";
+            //Console.WriteLine($"Updating interview details for interviewId: {interviewId}");
+            //interview.Answers = answers;
+            //interview.Summary = summary;
+            //interview.Status = "Completed";
 
-            await _interviewRepository.UpdateInterviewAsync(interview);
+            //await _interviewRepository.UpdateInterviewAsync(interview);
             Console.WriteLine($"Interview updated and status set to 'Completed' for interviewId: {interviewId}");
 
             // החזרת כל פרטי הראיון
