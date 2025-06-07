@@ -166,6 +166,7 @@ using System; // For Exception
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks; // Explicitly add for Task<string>
 
 public class AuthService : IAuthService
@@ -190,6 +191,9 @@ public class AuthService : IAuthService
         }
 
         var hashedPassword = PasswordHelper.HashPassword(password);
+        Console.WriteLine($"RegisterUserAsync: Plain password: [{password}], bytes: [{string.Join(", ", Encoding.UTF8.GetBytes(password))}]");
+        Console.WriteLine($"RegisterUserAsync: Hashed password: {hashedPassword}");
+
         string resumePath = null;
         if (resume != null)
         {
