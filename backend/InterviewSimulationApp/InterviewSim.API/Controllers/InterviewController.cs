@@ -93,7 +93,7 @@ namespace InterviewSim.API.Controllers
             {
                 Console.WriteLine($"Starting process to submit answers for userId: {userId}");
                 Console.WriteLine("-----------In controller----------");
-               "answers",answers.ForEach(answer => Console.WriteLine( "answer"+answer));
+               answers.ForEach(answer => Console.WriteLine( "answer"+answer));
                 // קבלת הראיון ושמירת התשובות
                 var interview = await _interviewService.SubmitAnswersAsync(userId, answers);
 
