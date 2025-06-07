@@ -93,7 +93,7 @@ namespace InterviewSim.API.Controllers
             {
                 Console.WriteLine($"Starting process to submit answers for userId: {userId}");
                 Console.WriteLine("-----------In controller----------");
-                Console.WriteLine("answers",answers.ToString());
+               "answers",answers.ForEach(answer => Console.WriteLine( "answer"+answer));
                 // קבלת הראיון ושמירת התשובות
                 var interview = await _interviewService.SubmitAnswersAsync(userId, answers);
 
@@ -103,6 +103,7 @@ namespace InterviewSim.API.Controllers
                     return StatusCode(404, "Unable to submit answers.");
                 }
 
+                // תוצאה מוצלחת
                 // תוצאה מוצלחת
                 Console.WriteLine($"Answers submitted successfully for interviewId: {interview.InterviewId}");
 
