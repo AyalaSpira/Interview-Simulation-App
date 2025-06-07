@@ -1,4 +1,5 @@
 ﻿using BCrypt.Net;
+using System.Text;
 
 namespace InterviewSim.BLL.Helpers
 {
@@ -17,7 +18,8 @@ namespace InterviewSim.BLL.Helpers
             Console.WriteLine("--------- Start VerifyPassword ---------");
             Console.WriteLine("Input password: " + password);
             Console.WriteLine("Input hashedPassword: " + hashedPassword);
-
+            Console.WriteLine($"Password as bytes: [{string.Join(", ", Encoding.UTF8.GetBytes(password))}]");
+            Console.WriteLine("--------------------------------------------------");
             if (string.IsNullOrWhiteSpace(password))
             {
                 Console.WriteLine("❌ password is null or empty");
