@@ -386,7 +386,7 @@ namespace InterviewSim.DAL.Repositories
             if (newUser == null)
                 throw new ArgumentNullException(nameof(newUser));
 
-            newUser.Password = PasswordHelper.HashPassword(newUser.Password);
+
             await _context.Users.AddAsync(newUser);
             await _context.SaveChangesAsync();
         }
