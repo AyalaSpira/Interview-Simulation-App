@@ -79,8 +79,16 @@ public class InterviewRepository : IInterviewRepository
 
         // עדכון רק של השדות הרלוונטיים
         existingInterview.Answers = interview.Answers;
+        existingInterview.Status = "Completed"; // Assuming we want to mark it as completed
         existingInterview.Summary = interview.Summary;
+        Console.WriteLine("---------------------------in updaate-------------");
+     existingInterview.Answers.ForEach(a => Console.WriteLine($"Answer: {a}")); // Print each answer to the console
+        Console.WriteLine(existingInterview.Summary);
 
+        Console.WriteLine("the last inter---------------");
+        interview.Answers.ForEach(a => Console.WriteLine($"Answer: {a}")); // Print each answer to the console
+
+        Console.WriteLine(interview.Summary);
         await _context.SaveChangesAsync();
     }
 

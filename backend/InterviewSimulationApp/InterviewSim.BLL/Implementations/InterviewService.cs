@@ -107,7 +107,7 @@ namespace InterviewSim.BLL.Implementations
             interview.Answers = answers;
             interview.Summary = summary;
             interview.Status = "Completed";
-
+            Console.WriteLine("--------------------------------- send to update-----------------");
             await _interviewRepository.UpdateInterviewAsync(interview);
             Console.WriteLine($"Interview updated and status set to 'Completed' for interviewId: {interviewId}");
 
