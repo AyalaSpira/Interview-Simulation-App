@@ -73,7 +73,14 @@ public class InterviewRepository : IInterviewRepository
     // עדכון ראיון
     public async Task UpdateInterviewAsync(Interview interview)
     {
-        _context.Interviews.Update(interview);
+        var existingInterview = await _context.Interviews.FindAsync(interview.InterviewId);
+        if (existingInterview == null)
+            throw new Exception($"Interview with ID {interview.InterviewId} not found.");
+
+        // עדכון רק של השדות הרלוונטיים
+        existingInterview.Answers = interview.Answers;
+        existingInterview.Summary = interview.Summary;
+
         await _context.SaveChangesAsync();
     }
 
