@@ -78,7 +78,7 @@ namespace InterviewSim.BLL.Implementations
 
             // שמירה של התשובות בראיון
             Console.WriteLine($"Saving answers for interviewId: {interviewId}");
-            await _interviewRepository.SaveInterviewAnswersAsync(interviewId, answers);
+            //await _interviewRepository.SaveInterviewAnswersAsync(interviewId, answers);
 
             var questions = await _interviewRepository.GetInterviewQuestionsAsync(interviewId);
             if (questions == null || !questions.Any())
@@ -98,9 +98,9 @@ namespace InterviewSim.BLL.Implementations
             }
             Console.WriteLine("AI analysis complete");
 
-            // שמירת הסיכום בראיון
-            Console.WriteLine($"Saving summary for interviewId: {interviewId}");
-            await _interviewRepository.SaveInterviewReportAsync(interviewId, summary);
+            //// שמירת הסיכום בראיון
+            //Console.WriteLine($"Saving summary for interviewId: {interviewId}");
+            //await _interviewRepository.SaveInterviewReportAsync(interviewId, summary);
 
 
             Console.WriteLine($"Updating interview details for interviewId: {interviewId}");

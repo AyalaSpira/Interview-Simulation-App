@@ -15,6 +15,24 @@ namespace InterviewSim.DAL
 
         public DbSet<Admin> Admins { get; set; }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Interview>()
+                .Property(i => i.Answers)
+                .HasConversion(
+                    v => string.Join("||", v),
+                    v => v.Split("||", StringSplitOptions.None).ToList());
+
+            modelBuilder.Entity<Interview>()
+                .Property(i => i.Questions)
+                .HasConversion(
+                    v => string.Join("||", v),
+                    v => v.Split("||", StringSplitOptions.None).ToList());
+
+            modelBuilder.Entity<Interview>()
+                .Property(i => i.Summary)
+                .HasColumnType("TEXT"); // אם זה יכול להיות טקסט ארוך
+        }
 
     }
 }
