@@ -1,12 +1,25 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom"
+import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom"
 import { AppBar, Toolbar, Button, Container, Box, Typography, Avatar, Menu, MenuItem, IconButton } from "@mui/material"
-import { motion } from "framer-motion"
-import { ChevronDown, User, FileText, Play, BarChart2, LogOut, MenuIcon } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import {
+  ChevronDown,
+  User,
+  FileText,
+  Play,
+  BarChart2,
+  LogOut,
+  MenuIcon,
+  HomeIcon,
+  Settings,
+  Bell,
+  Search,
+  Sparkles,
+} from "lucide-react"
+import LandingPage from "./components/LandingPage"
 import Home from "./components/home"
 import LoginForm from "./components/LoginForm"
 import RegisterForm from "./components/RegisterForm"
@@ -19,7 +32,9 @@ const App = () => {
   const [interviewId, setInterviewId] = useState<number | null>(null)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [notificationCount, setNotificationCount] = useState(3)
   const navigate = useNavigate()
+  const location = useLocation()
 
   useEffect(() => {
     if (token) {
@@ -38,7 +53,7 @@ const App = () => {
 
   const handleLogout = () => {
     setToken(null)
-    navigate("/login")
+    navigate("/")
   }
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -53,6 +68,8 @@ const App = () => {
     setMobileMenuOpen(!mobileMenuOpen)
   }
 
+  const isLandingPage = location.pathname === "/" || location.pathname === "/login" || location.pathname === "/register"
+
   const navButtonStyle = {
     color: "#fff",
     mx: 1,
@@ -66,6 +83,7 @@ const App = () => {
     "&:hover": {
       background: "rgba(255, 255, 255, 0.1)",
       transform: "translateY(-2px)",
+      boxShadow: "0 4px 12px rgba(168, 85, 247, 0.3)",
     },
   }
 
@@ -76,27 +94,43 @@ const App = () => {
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
-        background: "linear-gradient(135deg, #0f172a, #1e293b)",
+        background: isLandingPage ? "transparent" : "linear-gradient(135deg, #0f172a, #1e293b)",
       }}
     >
-      {token && (
+      {token && !isLandingPage && (
         <AppBar
           position="static"
           elevation={0}
           sx={{
-            background: "rgba(15, 23, 42, 0.7)",
-            backdropFilter: "blur(10px)",
+            background: "rgba(15, 23, 42, 0.8)",
+            backdropFilter: "blur(20px)",
             borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
           }}
         >
           <Container maxWidth="xl">
-            <Toolbar sx={{ justifyContent: "space-between" }}>
+            <Toolbar sx={{ justifyContent: "space-between", py: 1 }}>
               <Box sx={{ display: "flex", alignItems: "center" }}>
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5 }}
+                  style={{ display: "flex", alignItems: "center", gap: "12px" }}
                 >
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                    style={{
+                      width: "40px",
+                      height: "40px",
+                      borderRadius: "12px",
+                      background: "linear-gradient(135deg, #a855f7, #3b82f6)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Sparkles size={24} color="white" />
+                  </motion.div>
                   <Typography
                     variant="h5"
                     sx={{
@@ -108,7 +142,7 @@ const App = () => {
                       mr: 4,
                     }}
                   >
-                    Interview Simulator
+                    InterviewAI Pro
                   </Typography>
                 </motion.div>
 
@@ -117,7 +151,7 @@ const App = () => {
                   <Button
                     color="inherit"
                     onClick={() => navigate("/home")}
-                    startIcon={<User size={18} />}
+                    startIcon={<HomeIcon size={18} />}
                     sx={navButtonStyle}
                   >
                     Dashboard
@@ -128,7 +162,7 @@ const App = () => {
                     startIcon={<FileText size={18} />}
                     sx={navButtonStyle}
                   >
-                    Upload Resume
+                    Resume
                   </Button>
                   <Button
                     color="inherit"
@@ -136,7 +170,7 @@ const App = () => {
                     startIcon={<Play size={18} />}
                     sx={navButtonStyle}
                   >
-                    Start Interview
+                    Interview
                   </Button>
                   <Button
                     color="inherit"
@@ -144,103 +178,174 @@ const App = () => {
                     startIcon={<BarChart2 size={18} />}
                     sx={navButtonStyle}
                   >
-                    View Report
+                    Reports
                   </Button>
                 </Box>
               </Box>
 
-              {/* Mobile Menu Button */}
-              <Box sx={{ display: { xs: "flex", md: "none" } }}>
+              {/* Right Side Actions */}
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                {/* Search Button */}
                 <IconButton
-                  color="inherit"
-                  onClick={handleMobileMenuToggle}
                   sx={{
                     color: "#fff",
                     background: "rgba(255, 255, 255, 0.05)",
                     "&:hover": { background: "rgba(255, 255, 255, 0.1)" },
+                    display: { xs: "none", md: "flex" },
                   }}
                 >
-                  <MenuIcon size={24} />
+                  <Search size={20} />
                 </IconButton>
-              </Box>
 
-              {/* User Menu */}
-              <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center" }}>
-                <Button
-                  onClick={handleMenuOpen}
+                {/* Notifications */}
+                <IconButton
                   sx={{
                     color: "#fff",
-                    textTransform: "none",
-                    display: "flex",
-                    alignItems: "center",
                     background: "rgba(255, 255, 255, 0.05)",
-                    borderRadius: "12px",
-                    px: 2,
-                    py: 1,
                     "&:hover": { background: "rgba(255, 255, 255, 0.1)" },
+                    position: "relative",
+                    display: { xs: "none", md: "flex" },
                   }}
                 >
-                  <Avatar
+                  <Bell size={20} />
+                  {notificationCount > 0 && (
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        top: 4,
+                        right: 4,
+                        width: 16,
+                        height: 16,
+                        borderRadius: "50%",
+                        background: "linear-gradient(135deg, #ef4444, #dc2626)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "0.7rem",
+                        fontWeight: 600,
+                        color: "#fff",
+                      }}
+                    >
+                      {notificationCount}
+                    </Box>
+                  )}
+                </IconButton>
+
+                {/* Mobile Menu Button */}
+                <Box sx={{ display: { xs: "flex", md: "none" } }}>
+                  <IconButton
+                    color="inherit"
+                    onClick={handleMobileMenuToggle}
                     sx={{
-                      width: 32,
-                      height: 32,
-                      background: "linear-gradient(90deg, #a855f7, #3b82f6)",
-                      mr: 1,
-                    }}
-                  >
-                    <User size={16} />
-                  </Avatar>
-                  <Typography sx={{ ml: 1, mr: 1, fontWeight: 500 }}>My Account</Typography>
-                  <ChevronDown size={16} />
-                </Button>
-                <Menu
-                  anchorEl={anchorEl}
-                  open={Boolean(anchorEl)}
-                  onClose={handleMenuClose}
-                  PaperProps={{
-                    sx: {
-                      mt: 1,
-                      background: "rgba(30, 41, 59, 0.95)",
-                      backdropFilter: "blur(10px)",
-                      border: "1px solid rgba(255, 255, 255, 0.1)",
-                      borderRadius: "12px",
-                      boxShadow: "0 10px 40px rgba(0, 0, 0, 0.3)",
                       color: "#fff",
-                      minWidth: "200px",
-                      overflow: "hidden",
-                    },
-                  }}
-                >
-                  <MenuItem
-                    onClick={() => {
-                      handleMenuClose()
-                      navigate("/home")
-                    }}
-                    sx={{
-                      py: 1.5,
-                      px: 2,
-                      "&:hover": { background: "rgba(255, 255, 255, 0.05)" },
+                      background: "rgba(255, 255, 255, 0.05)",
+                      "&:hover": { background: "rgba(255, 255, 255, 0.1)" },
                     }}
                   >
-                    <User size={16} style={{ marginRight: "10px" }} />
-                    Profile
-                  </MenuItem>
-                  <MenuItem
-                    onClick={() => {
-                      handleMenuClose()
-                      handleLogout()
-                    }}
+                    <MenuIcon size={24} />
+                  </IconButton>
+                </Box>
+
+                {/* User Menu */}
+                <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center" }}>
+                  <Button
+                    onClick={handleMenuOpen}
                     sx={{
-                      py: 1.5,
+                      color: "#fff",
+                      textTransform: "none",
+                      display: "flex",
+                      alignItems: "center",
+                      background: "rgba(255, 255, 255, 0.05)",
+                      borderRadius: "12px",
                       px: 2,
-                      color: "#f87171",
-                      "&:hover": { background: "rgba(255, 255, 255, 0.05)" },
+                      py: 1,
+                      "&:hover": {
+                        background: "rgba(255, 255, 255, 0.1)",
+                        transform: "translateY(-2px)",
+                      },
+                      transition: "all 0.3s ease",
                     }}
                   >
-                    <LogOut size={16} style={{ marginRight: "10px" }} />
-                    Logout
-                  </MenuItem>
-                </Menu>
+                    <Avatar
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        background: "linear-gradient(135deg, #a855f7, #3b82f6)",
+                        mr: 1,
+                        fontSize: "0.9rem",
+                        fontWeight: 600,
+                      }}
+                    >
+                      <User size={16} />
+                    </Avatar>
+                    <Typography sx={{ ml: 1, mr: 1, fontWeight: 500 }}>Account</Typography>
+                    <ChevronDown size={16} />
+                  </Button>
+                  <Menu
+                    anchorEl={anchorEl}
+                    open={Boolean(anchorEl)}
+                    onClose={handleMenuClose}
+                    PaperProps={{
+                      sx: {
+                        mt: 1,
+                        background: "rgba(30, 41, 59, 0.95)",
+                        backdropFilter: "blur(20px)",
+                        border: "1px solid rgba(255, 255, 255, 0.1)",
+                        borderRadius: "16px",
+                        boxShadow: "0 20px 60px rgba(0, 0, 0, 0.4)",
+                        color: "#fff",
+                        minWidth: "220px",
+                        overflow: "hidden",
+                      },
+                    }}
+                  >
+                    <MenuItem
+                      onClick={() => {
+                        handleMenuClose()
+                        navigate("/home")
+                      }}
+                      sx={{
+                        py: 1.5,
+                        px: 2,
+                        "&:hover": { background: "rgba(168, 85, 247, 0.1)" },
+                        transition: "all 0.2s ease",
+                      }}
+                    >
+                      <User size={16} style={{ marginRight: "12px" }} />
+                      Profile
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => {
+                        handleMenuClose()
+                      }}
+                      sx={{
+                        py: 1.5,
+                        px: 2,
+                        "&:hover": { background: "rgba(168, 85, 247, 0.1)" },
+                        transition: "all 0.2s ease",
+                      }}
+                    >
+                      <Settings size={16} style={{ marginRight: "12px" }} />
+                      Settings
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => {
+                        handleMenuClose()
+                        handleLogout()
+                      }}
+                      sx={{
+                        py: 1.5,
+                        px: 2,
+                        color: "#f87171",
+                        "&:hover": { background: "rgba(239, 68, 68, 0.1)" },
+                        transition: "all 0.2s ease",
+                      }}
+                    >
+                      <LogOut size={16} style={{ marginRight: "12px" }} />
+                      Logout
+                    </MenuItem>
+                  </Menu>
+                </Box>
               </Box>
             </Toolbar>
           </Container>
@@ -248,111 +353,113 @@ const App = () => {
       )}
 
       {/* Mobile Menu */}
-      {token && mobileMenuOpen && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
-        >
-          <Box
-            sx={{
-              background: "rgba(15, 23, 42, 0.95)",
-              backdropFilter: "blur(10px)",
-              borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-              py: 2,
-              px: 3,
-            }}
+      <AnimatePresence>
+        {token && mobileMenuOpen && !isLandingPage && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
           >
-            <Button
-              fullWidth
-              color="inherit"
-              onClick={() => {
-                navigate("/home")
-                setMobileMenuOpen(false)
-              }}
-              startIcon={<User size={18} />}
+            <Box
               sx={{
-                ...navButtonStyle,
-                justifyContent: "flex-start",
-                my: 1,
-                mx: 0,
+                background: "rgba(15, 23, 42, 0.95)",
+                backdropFilter: "blur(20px)",
+                borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+                py: 2,
+                px: 3,
               }}
             >
-              Dashboard
-            </Button>
-            <Button
-              fullWidth
-              color="inherit"
-              onClick={() => {
-                navigate("/upload-resume")
-                setMobileMenuOpen(false)
-              }}
-              startIcon={<FileText size={18} />}
-              sx={{
-                ...navButtonStyle,
-                justifyContent: "flex-start",
-                my: 1,
-                mx: 0,
-              }}
-            >
-              Upload Resume
-            </Button>
-            <Button
-              fullWidth
-              color="inherit"
-              onClick={() => {
-                navigate("/interview")
-                setMobileMenuOpen(false)
-              }}
-              startIcon={<Play size={18} />}
-              sx={{
-                ...navButtonStyle,
-                justifyContent: "flex-start",
-                my: 1,
-                mx: 0,
-              }}
-            >
-              Start Interview
-            </Button>
-            <Button
-              fullWidth
-              color="inherit"
-              onClick={() => {
-                navigate("/report")
-                setMobileMenuOpen(false)
-              }}
-              startIcon={<BarChart2 size={18} />}
-              sx={{
-                ...navButtonStyle,
-                justifyContent: "flex-start",
-                my: 1,
-                mx: 0,
-              }}
-            >
-              View Report
-            </Button>
-            <Button
-              fullWidth
-              color="inherit"
-              onClick={() => {
-                handleLogout()
-                setMobileMenuOpen(false)
-              }}
-              startIcon={<LogOut size={18} />}
-              sx={{
-                ...navButtonStyle,
-                justifyContent: "flex-start",
-                my: 1,
-                mx: 0,
-                color: "#f87171",
-              }}
-            >
-              Logout
-            </Button>
-          </Box>
-        </motion.div>
-      )}
+              <Button
+                fullWidth
+                color="inherit"
+                onClick={() => {
+                  navigate("/home")
+                  setMobileMenuOpen(false)
+                }}
+                startIcon={<HomeIcon size={18} />}
+                sx={{
+                  ...navButtonStyle,
+                  justifyContent: "flex-start",
+                  my: 1,
+                  mx: 0,
+                }}
+              >
+                Dashboard
+              </Button>
+              <Button
+                fullWidth
+                color="inherit"
+                onClick={() => {
+                  navigate("/upload-resume")
+                  setMobileMenuOpen(false)
+                }}
+                startIcon={<FileText size={18} />}
+                sx={{
+                  ...navButtonStyle,
+                  justifyContent: "flex-start",
+                  my: 1,
+                  mx: 0,
+                }}
+              >
+                Resume
+              </Button>
+              <Button
+                fullWidth
+                color="inherit"
+                onClick={() => {
+                  navigate("/interview")
+                  setMobileMenuOpen(false)
+                }}
+                startIcon={<Play size={18} />}
+                sx={{
+                  ...navButtonStyle,
+                  justifyContent: "flex-start",
+                  my: 1,
+                  mx: 0,
+                }}
+              >
+                Interview
+              </Button>
+              <Button
+                fullWidth
+                color="inherit"
+                onClick={() => {
+                  navigate("/report")
+                  setMobileMenuOpen(false)
+                }}
+                startIcon={<BarChart2 size={18} />}
+                sx={{
+                  ...navButtonStyle,
+                  justifyContent: "flex-start",
+                  my: 1,
+                  mx: 0,
+                }}
+              >
+                Reports
+              </Button>
+              <Button
+                fullWidth
+                color="inherit"
+                onClick={() => {
+                  handleLogout()
+                  setMobileMenuOpen(false)
+                }}
+                startIcon={<LogOut size={18} />}
+                sx={{
+                  ...navButtonStyle,
+                  justifyContent: "flex-start",
+                  my: 1,
+                  mx: 0,
+                  color: "#f87171",
+                }}
+              >
+                Logout
+              </Button>
+            </Box>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <Box
         sx={{
@@ -363,13 +470,13 @@ const App = () => {
         }}
       >
         <Routes>
-          <Route path="/" element={token ? <Navigate to="/home" /> : <Navigate to="/login" />} />
-          <Route path="/home" element={token ? <Home onLogout={handleLogout} /> : <Navigate to="/login" />} />
+          <Route path="/" element={!token ? <LandingPage /> : <Navigate to="/home" />} />
+          <Route path="/home" element={token ? <Home onLogout={handleLogout} /> : <Navigate to="/" />} />
           <Route path="/login" element={!token ? <LoginForm onLogin={handleLogin} /> : <Navigate to="/home" />} />
           <Route path="/register" element={!token ? <RegisterForm onLogin={handleLogin} /> : <Navigate to="/home" />} />
-          <Route path="/upload-resume" element={token ? <UploadResume /> : <Navigate to="/login" />} />
-          <Route path="/interview" element={token ? <InterviewPage /> : <Navigate to="/login" />} />
-          <Route path="/report" element={token ? <Report interviewId={interviewId} /> : <Navigate to="/login" />} />
+          <Route path="/upload-resume" element={token ? <UploadResume /> : <Navigate to="/" />} />
+          <Route path="/interview" element={token ? <InterviewPage /> : <Navigate to="/" />} />
+          <Route path="/report" element={token ? <Report interviewId={interviewId} /> : <Navigate to="/" />} />
         </Routes>
       </Box>
     </Box>

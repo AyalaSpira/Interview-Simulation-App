@@ -1,4 +1,4 @@
-using InterviewSim.DAL.Entities;
+ο»Ώusing InterviewSim.DAL.Entities;
 using InterviewSim.DAL.Repositories;
 using InterviewSim.DAL;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +13,7 @@ public class InterviewRepository : IInterviewRepository
         _context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
-    // δϊημϊ ψΰιεο
+    // Χ”ΧªΧ—ΧΧª Χ¨ΧΧ™Χ•Χ
     public async Task<Interview> StartInterviewAsync(int userId, List<string> questions)
     {
         var interview = new Interview
@@ -31,7 +31,7 @@ public class InterviewRepository : IInterviewRepository
         return interview;
     }
 
-    // χαμϊ ωΰμεϊ ψΰιεο μτι ξζδδ ψΰιεο
+    // Χ§Χ‘ΧΧª Χ©ΧΧΧ•Χª Χ¨ΧΧ™Χ•Χ ΧΧ¤Χ™ ΧΧ–Χ”Χ” Χ¨ΧΧ™Χ•Χ
     public async Task<List<string>> GetInterviewQuestionsAsync(int interviewId)
     {
         var interview = await _context.Interviews.FindAsync(interviewId);
@@ -57,7 +57,7 @@ public class InterviewRepository : IInterviewRepository
       
     }
 
-    // ωξιψϊ γεη ψΰιεο
+    // Χ©ΧΧ™Χ¨Χª Χ“Χ•Χ— Χ¨ΧΧ™Χ•Χ
     public async Task SaveInterviewReportAsync(int interviewId, string report)
     {
         var interview = await _context.Interviews.FindAsync(interviewId);
@@ -70,42 +70,49 @@ public class InterviewRepository : IInterviewRepository
         }
     }
 
-    // ςγλεο ψΰιεο
+    // ΧΆΧ“Χ›Χ•Χ Χ¨ΧΧ™Χ•Χ
     public async Task UpdateInterviewAsync(Interview interview)
     {
         var existingInterview = await _context.Interviews.FindAsync(interview.InterviewId);
         if (existingInterview == null)
             throw new Exception($"Interview with ID {interview.InterviewId} not found.");
 
-        // ςγλεο ψχ ωμ δωγεϊ δψμεεπθιιν
-        existingInterview.Answers = interview.Answers;
-        existingInterview.Status = "Completed"; // Assuming we want to mark it as completed
+        // β… ΧΆΧ“Χ›Χ•Χ ΧΆΧ Χ¨Χ©Χ™ΧΧ” Χ—Χ“Χ©Χ” Χ›Χ“Χ™ Χ©-EF Core Χ™Χ–Χ”Χ” Χ©Χ™Χ Χ•Χ™
+        existingInterview.Answers = new List<string>(interview.Answers);
+        existingInterview.Status = "Completed";
         existingInterview.Summary = interview.Summary;
-        Console.WriteLine("---------------------------in updaate-------------");
-     existingInterview.Answers.ForEach(a => Console.WriteLine($"Answer: {a}")); // Print each answer to the console
-        Console.WriteLine(existingInterview.Summary);
 
-        Console.WriteLine("the last inter---------------");
-        interview.Answers.ForEach(a => Console.WriteLine($"Answer: {a}")); // Print each answer to the console
+        // β… Χ—Χ™Χ•Χ•Χ™ Χ”ΧΧ EF Core ΧΧ–Χ”Χ” Χ©Χ™Χ Χ•Χ™Χ™Χ
+        Console.WriteLine("HasChanges? " + _context.ChangeTracker.HasChanges());
 
-        Console.WriteLine(interview.Summary);
-        await _context.SaveChangesAsync();
+        // β… Χ΅Χ™ΧΧ•Χ ΧΧ¤Χ•Χ¨Χ© Χ©Χ Χ©Χ“Χ•Χª Χ›ΧΧ©ΧªΧ Χ™Χ (Χ¨Χ©Χ•Χª β€“ ΧΧ Χ™Χ© Χ‘ΧΆΧ™Χ”)
+        _context.Entry(existingInterview).Property(i => i.Answers).IsModified = true;
+        _context.Entry(existingInterview).Property(i => i.Summary).IsModified = true;
+        _context.Entry(existingInterview).Property(i => i.Status).IsModified = true;
+
+        Console.WriteLine("------ IN UPDATE -----------");
+        existingInterview.Answers.ForEach(a => Console.WriteLine("Answer: " + a));
+        Console.WriteLine("Summary: " + existingInterview.Summary);
+
+        // β… Χ©ΧΧ™Χ¨Χ” ΧΧΧ΅Χ“
+        var affected = await _context.SaveChangesAsync();
+        Console.WriteLine($"Rows affected: {affected}");
     }
 
-    // χαμϊ ψΰιεο μτι ξζδδ
+    // Χ§Χ‘ΧΧª Χ¨ΧΧ™Χ•Χ ΧΧ¤Χ™ ΧΧ–Χ”Χ”
     public async Task<Interview> GetInterviewByIdAsync(int interviewId)
     {
         return await _context.Interviews.FirstOrDefaultAsync(i => i.InterviewId == interviewId);
     }
 
-    // ωξιψϊ ψΰιεο ηγω
+    // Χ©ΧΧ™Χ¨Χª Χ¨ΧΧ™Χ•Χ Χ—Χ“Χ©
     public async Task SaveInterviewAsync(Interview interview)
     {
         await _context.Interviews.AddAsync(interview);
         await _context.SaveChangesAsync();
     }
 
-    // ςγλεο δριλεν μ-null
+    // ΧΆΧ“Χ›Χ•Χ Χ”Χ΅Χ™Χ›Χ•Χ Χ-null
     public async Task UpdateReportToNullAsync(string fileUrl)
     {
         var interview = await _context.Interviews.FirstOrDefaultAsync(r => r.Summary == fileUrl);
@@ -116,7 +123,7 @@ public class InterviewRepository : IInterviewRepository
         }
     }
 
-    // ωμιτϊ λμ δψΰιεπεϊ ωμ ξωϊξω μτι ξζδδ
+    // Χ©ΧΧ™Χ¤Χª Χ›Χ Χ”Χ¨ΧΧ™Χ•Χ Χ•Χª Χ©Χ ΧΧ©ΧªΧΧ© ΧΧ¤Χ™ ΧΧ–Χ”Χ”
     public async Task<IEnumerable<Interview>> GetInterviewsByUserIdAsync(int userId)
     {
         return await _context.Interviews
@@ -128,10 +135,10 @@ public class InterviewRepository : IInterviewRepository
 
     public async Task<Interview> GetLastInterviewByUserIdAsync(int userId)
     {
-        // μτι δπϊεπιν ωωμηϊ, δωγδ δψμεεπθι δεΰ InterviewDate
+        // ΧΧ¤Χ™ Χ”Χ ΧªΧ•Χ Χ™Χ Χ©Χ©ΧΧ—Χª, Χ”Χ©Χ“Χ” Χ”Χ¨ΧΧ•Χ•Χ ΧΧ™ Χ”Χ•Χ InterviewDate
         return await _context.Interviews
                              .Where(i => i.UserId == userId)
-                             .OrderByDescending(i => i.InterviewDate) // ξιεο ιεψγ μτι InterviewDate λγι μχαμ ΰϊ δΰηψεο
-                             .FirstOrDefaultAsync(); // ξηζιψ ΰϊ δψΰωεο (δΰηψεο αζξο) ΰε null
+                             .OrderByDescending(i => i.InterviewDate) // ΧΧ™Χ•Χ Χ™Χ•Χ¨Χ“ ΧΧ¤Χ™ InterviewDate Χ›Χ“Χ™ ΧΧ§Χ‘Χ ΧΧª Χ”ΧΧ—Χ¨Χ•Χ
+                             .FirstOrDefaultAsync(); // ΧΧ—Χ–Χ™Χ¨ ΧΧª Χ”Χ¨ΧΧ©Χ•Χ (Χ”ΧΧ—Χ¨Χ•Χ Χ‘Χ–ΧΧ) ΧΧ• null
     }
 }

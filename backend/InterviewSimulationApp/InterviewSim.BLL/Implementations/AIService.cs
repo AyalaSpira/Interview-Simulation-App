@@ -192,7 +192,9 @@ Resume Text:
                 prompt += $"Question: {questions[i]}\nAnswer: {answers[i]}\n\n";
             }
 
-            prompt += "Based on this, please provide a summary of the candidate's performance.";
+            prompt += "Based on this, please provide a summary of the candidate's performance.\n";
+            prompt += "At the end, include a final numeric score from 1 to 100 in the format: MARK=XX (where XX is the score).";
+
             return prompt;
         }
 
