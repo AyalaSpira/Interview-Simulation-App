@@ -77,26 +77,59 @@ public class InterviewRepository : IInterviewRepository
         if (existingInterview == null)
             throw new Exception($"Interview with ID {interview.InterviewId} not found.");
 
-        // ✅ עדכון עם רשימה חדשה כדי ש-EF Core יזהה שינוי
-        existingInterview.Answers = new List<string>(interview.Answers);
-        existingInterview.Status = "Completed";
-        existingInterview.Summary = interview.Summary;
+        Console.WriteLine("----- BEFORE UPDATE -----");
+        Console.WriteLine("OLD Answers: " + string.Join(" || ", existingInterview.Answers));
+        Console.WriteLine("NEW Answers: " + string.Join(" || ", interview.Answers));
+        Console.WriteLine("OLD Summary: " + existingInterview.Summary);
+        Console.WriteLine("NEW Summary: " + interview.Summary);
+        Console.WriteLine("OLD Status: " + existingInterview.Status);
+        Console.WriteLine("NEW Status: " + interview.Status);
 
-        // ✅ חיווי האם EF Core מזהה שינויים
-        Console.WriteLine("HasChanges? " + _context.ChangeTracker.HasChanges());
+        // השוואה - האם באמת יש שינוי
+        bool isAnswersChanged = string.Join("||", existingInterview.Answers) != string.Join("||", interview.Answers);
+        bool isSummaryChanged = existingInterview.Summary != interview.Summary;
+        bool isStatusChanged = existingInterview.Status != interview.Status;
 
-        // ✅ סימון מפורש של שדות כמשתנים (רשות – אם יש בעיה)
-        _context.Entry(existingInterview).Property(i => i.Answers).IsModified = true;
-        _context.Entry(existingInterview).Property(i => i.Summary).IsModified = true;
-        _context.Entry(existingInterview).Property(i => i.Status).IsModified = true;
+        if (!isAnswersChanged && !isSummaryChanged && !isStatusChanged)
+        {
+            Console.WriteLine("❗ No changes detected. Skipping update.");
+            return;
+        }
 
-        Console.WriteLine("------ IN UPDATE -----------");
-        existingInterview.Answers.ForEach(a => Console.WriteLine("Answer: " + a));
-        Console.WriteLine("Summary: " + existingInterview.Summary);
+        // FORCE UPDATE - לרוקן קודם כדי לוודא שינוי
+        if (isAnswersChanged)
+        {
+            _context.Entry(existingInterview).Property(e => e.Answers).CurrentValue = null;
+            await _context.SaveChangesAsync(); // שלב ביניים כדי לאפס
+            existingInterview.Answers = new List<string>(interview.Answers);
+            _context.Entry(existingInterview).Property(e => e.Answers).IsModified = true;
+        }
 
-        // ✅ שמירה למסד
-        var affected = await _context.SaveChangesAsync();
-        Console.WriteLine($"Rows affected: {affected}");
+        if (isSummaryChanged)
+        {
+            existingInterview.Summary = interview.Summary;
+            _context.Entry(existingInterview).Property(e => e.Summary).IsModified = true;
+        }
+
+        if (isStatusChanged)
+        {
+            existingInterview.Status = interview.Status;
+            _context.Entry(existingInterview).Property(e => e.Status).IsModified = true;
+        }
+
+        Console.WriteLine("Saving changes...");
+        int affected = await _context.SaveChangesAsync();
+        Console.WriteLine($"✅ Rows affected: {affected}");
+
+        // בדיקת טעינה מחדש
+        var reloaded = await _context.Interviews
+            .AsNoTracking()
+            .FirstOrDefaultAsync(i => i.InterviewId == interview.InterviewId);
+
+        Console.WriteLine("----- AFTER UPDATE (Reloaded) -----");
+        Console.WriteLine("Answers (from DB): " + string.Join(" || ", reloaded.Answers));
+        Console.WriteLine("Summary (from DB): " + reloaded.Summary);
+        Console.WriteLine("Status (from DB): " + reloaded.Status);
     }
 
     // קבלת ראיון לפי מזהה
