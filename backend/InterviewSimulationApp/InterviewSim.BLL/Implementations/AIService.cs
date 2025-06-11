@@ -157,7 +157,7 @@ Resume Text:
                 model = _model,
                 messages = new[] { new { role = "system", content = "You are an AI interview analysis tool." },
                                    new { role = "user", content = prompt } },
-                max_tokens = 100
+                max_tokens = 700
             };
 
             var jsonRequest = JsonSerializer.Serialize(requestBody);

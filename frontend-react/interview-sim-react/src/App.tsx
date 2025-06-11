@@ -19,7 +19,6 @@ import {
   Search,
   Sparkles,
 } from "lucide-react"
-import LandingPage from "./components/LandingPage"
 import Home from "./components/home"
 import LoginForm from "./components/LoginForm"
 import RegisterForm from "./components/RegisterForm"
@@ -44,16 +43,24 @@ const App = () => {
     }
   }, [token])
 
+  // ניתוב אוטומטי לעמוד הלוגין בכניסה ראשונה
+  useEffect(() => {
+    if (!token && location.pathname === "/") {
+      navigate("/login")
+    }
+  }, [token, location.pathname, navigate])
+
   const handleLogin = (newToken: string) => {
     console.log("Token received:", newToken)
     setToken(newToken)
     localStorage.setItem("token", newToken)
-    navigate("/home")
+    navigate("/home") // מעבר ישיר ל-HOME אחרי לוגין
   }
 
   const handleLogout = () => {
     setToken(null)
-    navigate("/")
+    localStorage.removeItem("token")
+    navigate("/login") // חזרה ללוגין אחרי יציאה
   }
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -68,16 +75,16 @@ const App = () => {
     setMobileMenuOpen(!mobileMenuOpen)
   }
 
-  const isLandingPage = location.pathname === "/" || location.pathname === "/login" || location.pathname === "/register"
+  const isAuthPage = location.pathname === "/login" || location.pathname === "/register"
 
   const navButtonStyle = {
     color: "#fff",
-    mx: 1,
-    py: 1,
-    px: 2,
-    borderRadius: "12px",
+    mx: 0.5,
+    py: 0.8,
+    px: 1.5,
+    borderRadius: "10px",
     textTransform: "none",
-    fontSize: "0.95rem",
+    fontSize: "0.9rem",
     fontWeight: 600,
     transition: "all 0.3s ease",
     "&:hover": {
@@ -94,10 +101,10 @@ const App = () => {
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
-        background: isLandingPage ? "transparent" : "linear-gradient(135deg, #0f172a, #1e293b)",
+        background: isAuthPage ? "transparent" : "linear-gradient(135deg, #0f172a, #1e293b)",
       }}
     >
-      {token && !isLandingPage && (
+      {token && !isAuthPage && (
         <AppBar
           position="static"
           elevation={0}
@@ -105,41 +112,43 @@ const App = () => {
             background: "rgba(15, 23, 42, 0.8)",
             backdropFilter: "blur(20px)",
             borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+            minHeight: "64px",
           }}
         >
           <Container maxWidth="xl">
-            <Toolbar sx={{ justifyContent: "space-between", py: 1 }}>
+            <Toolbar sx={{ justifyContent: "space-between", py: 0.5, minHeight: "64px !important" }}>
               <Box sx={{ display: "flex", alignItems: "center" }}>
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5 }}
-                  style={{ display: "flex", alignItems: "center", gap: "12px" }}
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
                 >
                   <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
                     style={{
-                      width: "40px",
-                      height: "40px",
-                      borderRadius: "12px",
+                      width: "36px",
+                      height: "36px",
+                      borderRadius: "10px",
                       background: "linear-gradient(135deg, #a855f7, #3b82f6)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                   >
-                    <Sparkles size={24} color="white" />
+                    <Sparkles size={20} color="white" />
                   </motion.div>
                   <Typography
-                    variant="h5"
+                    variant="h6"
                     sx={{
                       fontWeight: 700,
                       background: "linear-gradient(90deg, #a855f7, #3b82f6)",
                       backgroundClip: "text",
                       WebkitBackgroundClip: "text",
                       WebkitTextFillColor: "transparent",
-                      mr: 4,
+                      mr: 2,
+                      fontSize: "1.3rem",
                     }}
                   >
                     InterviewAI Pro
@@ -151,40 +160,40 @@ const App = () => {
                   <Button
                     color="inherit"
                     onClick={() => navigate("/home")}
-                    startIcon={<HomeIcon size={18} />}
+                    startIcon={<HomeIcon size={16} />}
                     sx={navButtonStyle}
                   >
-                    Dashboard
+                    דשבורד
                   </Button>
                   <Button
                     color="inherit"
                     onClick={() => navigate("/upload-resume")}
-                    startIcon={<FileText size={18} />}
+                    startIcon={<FileText size={16} />}
                     sx={navButtonStyle}
                   >
-                    Resume
+                    קורות חיים
                   </Button>
                   <Button
                     color="inherit"
                     onClick={() => navigate("/interview")}
-                    startIcon={<Play size={18} />}
+                    startIcon={<Play size={16} />}
                     sx={navButtonStyle}
                   >
-                    Interview
+                    ראיון
                   </Button>
                   <Button
                     color="inherit"
                     onClick={() => navigate("/report")}
-                    startIcon={<BarChart2 size={18} />}
+                    startIcon={<BarChart2 size={16} />}
                     sx={navButtonStyle}
                   >
-                    Reports
+                    דוחות
                   </Button>
                 </Box>
               </Box>
 
               {/* Right Side Actions */}
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 {/* Search Button */}
                 <IconButton
                   sx={{
@@ -192,9 +201,11 @@ const App = () => {
                     background: "rgba(255, 255, 255, 0.05)",
                     "&:hover": { background: "rgba(255, 255, 255, 0.1)" },
                     display: { xs: "none", md: "flex" },
+                    width: 36,
+                    height: 36,
                   }}
                 >
-                  <Search size={20} />
+                  <Search size={18} />
                 </IconButton>
 
                 {/* Notifications */}
@@ -205,23 +216,25 @@ const App = () => {
                     "&:hover": { background: "rgba(255, 255, 255, 0.1)" },
                     position: "relative",
                     display: { xs: "none", md: "flex" },
+                    width: 36,
+                    height: 36,
                   }}
                 >
-                  <Bell size={20} />
+                  <Bell size={18} />
                   {notificationCount > 0 && (
                     <Box
                       sx={{
                         position: "absolute",
-                        top: 4,
-                        right: 4,
-                        width: 16,
-                        height: 16,
+                        top: 2,
+                        right: 2,
+                        width: 14,
+                        height: 14,
                         borderRadius: "50%",
                         background: "linear-gradient(135deg, #ef4444, #dc2626)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        fontSize: "0.7rem",
+                        fontSize: "0.6rem",
                         fontWeight: 600,
                         color: "#fff",
                       }}
@@ -240,9 +253,11 @@ const App = () => {
                       color: "#fff",
                       background: "rgba(255, 255, 255, 0.05)",
                       "&:hover": { background: "rgba(255, 255, 255, 0.1)" },
+                      width: 36,
+                      height: 36,
                     }}
                   >
-                    <MenuIcon size={24} />
+                    <MenuIcon size={20} />
                   </IconButton>
                 </Box>
 
@@ -256,30 +271,31 @@ const App = () => {
                       display: "flex",
                       alignItems: "center",
                       background: "rgba(255, 255, 255, 0.05)",
-                      borderRadius: "12px",
-                      px: 2,
-                      py: 1,
+                      borderRadius: "10px",
+                      px: 1.5,
+                      py: 0.5,
                       "&:hover": {
                         background: "rgba(255, 255, 255, 0.1)",
                         transform: "translateY(-2px)",
                       },
                       transition: "all 0.3s ease",
+                      minWidth: "auto",
                     }}
                   >
                     <Avatar
                       sx={{
-                        width: 32,
-                        height: 32,
+                        width: 28,
+                        height: 28,
                         background: "linear-gradient(135deg, #a855f7, #3b82f6)",
-                        mr: 1,
-                        fontSize: "0.9rem",
+                        mr: 0.5,
+                        fontSize: "0.8rem",
                         fontWeight: 600,
                       }}
                     >
-                      <User size={16} />
+                      <User size={14} />
                     </Avatar>
-                    <Typography sx={{ ml: 1, mr: 1, fontWeight: 500 }}>Account</Typography>
-                    <ChevronDown size={16} />
+                    <Typography sx={{ ml: 0.5, mr: 0.5, fontWeight: 500, fontSize: "0.9rem" }}>חשבון</Typography>
+                    <ChevronDown size={14} />
                   </Button>
                   <Menu
                     anchorEl={anchorEl}
@@ -291,10 +307,10 @@ const App = () => {
                         background: "rgba(30, 41, 59, 0.95)",
                         backdropFilter: "blur(20px)",
                         border: "1px solid rgba(255, 255, 255, 0.1)",
-                        borderRadius: "16px",
+                        borderRadius: "12px",
                         boxShadow: "0 20px 60px rgba(0, 0, 0, 0.4)",
                         color: "#fff",
-                        minWidth: "220px",
+                        minWidth: "180px",
                         overflow: "hidden",
                       },
                     }}
@@ -305,28 +321,30 @@ const App = () => {
                         navigate("/home")
                       }}
                       sx={{
-                        py: 1.5,
+                        py: 1,
                         px: 2,
                         "&:hover": { background: "rgba(168, 85, 247, 0.1)" },
                         transition: "all 0.2s ease",
+                        fontSize: "0.9rem",
                       }}
                     >
-                      <User size={16} style={{ marginRight: "12px" }} />
-                      Profile
+                      <User size={14} style={{ marginRight: "8px" }} />
+                      פרופיל
                     </MenuItem>
                     <MenuItem
                       onClick={() => {
                         handleMenuClose()
                       }}
                       sx={{
-                        py: 1.5,
+                        py: 1,
                         px: 2,
                         "&:hover": { background: "rgba(168, 85, 247, 0.1)" },
                         transition: "all 0.2s ease",
+                        fontSize: "0.9rem",
                       }}
                     >
-                      <Settings size={16} style={{ marginRight: "12px" }} />
-                      Settings
+                      <Settings size={14} style={{ marginRight: "8px" }} />
+                      הגדרות
                     </MenuItem>
                     <MenuItem
                       onClick={() => {
@@ -334,15 +352,16 @@ const App = () => {
                         handleLogout()
                       }}
                       sx={{
-                        py: 1.5,
+                        py: 1,
                         px: 2,
                         color: "#f87171",
                         "&:hover": { background: "rgba(239, 68, 68, 0.1)" },
                         transition: "all 0.2s ease",
+                        fontSize: "0.9rem",
                       }}
                     >
-                      <LogOut size={16} style={{ marginRight: "12px" }} />
-                      Logout
+                      <LogOut size={14} style={{ marginRight: "8px" }} />
+                      יציאה
                     </MenuItem>
                   </Menu>
                 </Box>
@@ -354,7 +373,7 @@ const App = () => {
 
       {/* Mobile Menu */}
       <AnimatePresence>
-        {token && mobileMenuOpen && !isLandingPage && (
+        {token && mobileMenuOpen && !isAuthPage && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -366,8 +385,8 @@ const App = () => {
                 background: "rgba(15, 23, 42, 0.95)",
                 backdropFilter: "blur(20px)",
                 borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-                py: 2,
-                px: 3,
+                py: 1,
+                px: 2,
               }}
             >
               <Button
@@ -377,15 +396,15 @@ const App = () => {
                   navigate("/home")
                   setMobileMenuOpen(false)
                 }}
-                startIcon={<HomeIcon size={18} />}
+                startIcon={<HomeIcon size={16} />}
                 sx={{
                   ...navButtonStyle,
                   justifyContent: "flex-start",
-                  my: 1,
+                  my: 0.5,
                   mx: 0,
                 }}
               >
-                Dashboard
+                דשבורד
               </Button>
               <Button
                 fullWidth
@@ -394,15 +413,15 @@ const App = () => {
                   navigate("/upload-resume")
                   setMobileMenuOpen(false)
                 }}
-                startIcon={<FileText size={18} />}
+                startIcon={<FileText size={16} />}
                 sx={{
                   ...navButtonStyle,
                   justifyContent: "flex-start",
-                  my: 1,
+                  my: 0.5,
                   mx: 0,
                 }}
               >
-                Resume
+                קורות חיים
               </Button>
               <Button
                 fullWidth
@@ -411,15 +430,15 @@ const App = () => {
                   navigate("/interview")
                   setMobileMenuOpen(false)
                 }}
-                startIcon={<Play size={18} />}
+                startIcon={<Play size={16} />}
                 sx={{
                   ...navButtonStyle,
                   justifyContent: "flex-start",
-                  my: 1,
+                  my: 0.5,
                   mx: 0,
                 }}
               >
-                Interview
+                ראיון
               </Button>
               <Button
                 fullWidth
@@ -428,15 +447,15 @@ const App = () => {
                   navigate("/report")
                   setMobileMenuOpen(false)
                 }}
-                startIcon={<BarChart2 size={18} />}
+                startIcon={<BarChart2 size={16} />}
                 sx={{
                   ...navButtonStyle,
                   justifyContent: "flex-start",
-                  my: 1,
+                  my: 0.5,
                   mx: 0,
                 }}
               >
-                Reports
+                דוחות
               </Button>
               <Button
                 fullWidth
@@ -445,16 +464,16 @@ const App = () => {
                   handleLogout()
                   setMobileMenuOpen(false)
                 }}
-                startIcon={<LogOut size={18} />}
+                startIcon={<LogOut size={16} />}
                 sx={{
                   ...navButtonStyle,
                   justifyContent: "flex-start",
-                  my: 1,
+                  my: 0.5,
                   mx: 0,
                   color: "#f87171",
                 }}
               >
-                Logout
+                יציאה
               </Button>
             </Box>
           </motion.div>
@@ -470,13 +489,18 @@ const App = () => {
         }}
       >
         <Routes>
-          <Route path="/" element={!token ? <LandingPage /> : <Navigate to="/home" />} />
-          <Route path="/home" element={token ? <Home onLogout={handleLogout} /> : <Navigate to="/" />} />
+          {/* ניתוב ראשי - אם אין טוקן, מעבר ללוגין */}
+          <Route path="/" element={token ? <Navigate to="/home" /> : <Navigate to="/login" />} />
+
+          {/* עמודי אימות */}
           <Route path="/login" element={!token ? <LoginForm onLogin={handleLogin} /> : <Navigate to="/home" />} />
           <Route path="/register" element={!token ? <RegisterForm onLogin={handleLogin} /> : <Navigate to="/home" />} />
-          <Route path="/upload-resume" element={token ? <UploadResume /> : <Navigate to="/" />} />
-          <Route path="/interview" element={token ? <InterviewPage /> : <Navigate to="/" />} />
-          <Route path="/report" element={token ? <Report interviewId={interviewId} /> : <Navigate to="/" />} />
+
+          {/* עמודים מוגנים */}
+          <Route path="/home" element={token ? <Home onLogout={handleLogout} /> : <Navigate to="/login" />} />
+          <Route path="/upload-resume" element={token ? <UploadResume /> : <Navigate to="/login" />} />
+          <Route path="/interview" element={token ? <InterviewPage /> : <Navigate to="/login" />} />
+          <Route path="/report" element={token ? <Report /> : <Navigate to="/login" />} />
         </Routes>
       </Box>
     </Box>

@@ -10,7 +10,7 @@ import { Mail, CheckCircle, AlertCircle } from "lucide-react"
 const { Title, Text } = Typography
 
 interface InterviewReportProps {
-  interviewId: number | null
+  interviewId?: number | null
 }
 
 const InterviewReport: React.FC<InterviewReportProps> = ({ interviewId }) => {
@@ -19,17 +19,15 @@ const InterviewReport: React.FC<InterviewReportProps> = ({ interviewId }) => {
   const [success, setSuccess] = useState(false)
 
   const handleSendReport = async () => {
-    if (!interviewId) {
-      setError("Invalid interview ID")
-      return
-    }
+    // אם אין interviewId, נשתמש בערך ברירת מחדל 1
+    const reportId = interviewId || 1
 
     setLoading(true)
     setError(null)
     setSuccess(false)
 
     try {
-      const response = await sendInterviewReport(interviewId)
+      const response = await sendInterviewReport(reportId)
       console.log(response)
       setSuccess(true)
     } catch (err) {

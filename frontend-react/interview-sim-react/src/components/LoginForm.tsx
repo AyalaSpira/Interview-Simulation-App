@@ -22,9 +22,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
   const navigate = useNavigate()
 
   const features = [
-    { icon: <Sparkles size={20} />, text: "AI-Powered Questions" },
-    { icon: <Shield size={20} />, text: "Secure & Private" },
-    { icon: <Zap size={20} />, text: "Instant Feedback" },
+    { icon: <Sparkles size={18} />, text: "שאלות מותאמות בינה מלאכותית" },
+    { icon: <Shield size={18} />, text: "בטוח ופרטי לחלוטין" },
+    { icon: <Zap size={18} />, text: "משוב מיידי ומדויק" },
   ]
 
   useEffect(() => {
@@ -47,22 +47,21 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
 
       if (response.error) {
         console.error("Login failed with error:", response.error)
-        message.error(response.error)
-        navigate("/register")
+        message.error("שגיאה בהתחברות: " + response.error)
         return
       }
 
       if (response.token) {
         localStorage.setItem("token", response.token)
         onLogin(response.token)
-        message.success("Welcome back! 🎉")
-        navigate("/home")
+        message.success("ברוך הבא! 🎉")
+        // הניתוב יקרה אוטומטית דרך onLogin
       } else {
-        message.error("Login failed. Please try again.")
+        message.error("ההתחברות נכשלה. אנא נסה שוב.")
       }
     } catch (error) {
       console.error("Login error:", error)
-      message.error("An error occurred during login.")
+      message.error("אירעה שגיאה במהלך ההתחברות.")
     } finally {
       setLoading(false)
     }
@@ -76,32 +75,33 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
         display: "flex",
         position: "relative",
         overflow: "hidden",
+        padding: "20px",
       }}
     >
       {/* Animated Background */}
       <div style={{ position: "absolute", inset: 0 }}>
-        {[...Array(15)].map((_, i) => (
+        {[...Array(12)].map((_, i) => (
           <motion.div
             key={i}
             style={{
               position: "absolute",
-              width: Math.random() * 200 + 50,
-              height: Math.random() * 200 + 50,
+              width: Math.random() * 150 + 40,
+              height: Math.random() * 150 + 40,
               borderRadius: "50%",
               background: `radial-gradient(circle, ${
                 i % 3 === 0
-                  ? "rgba(168, 85, 247, 0.1)"
+                  ? "rgba(168, 85, 247, 0.08)"
                   : i % 3 === 1
-                    ? "rgba(59, 130, 246, 0.1)"
-                    : "rgba(16, 185, 129, 0.1)"
+                    ? "rgba(59, 130, 246, 0.08)"
+                    : "rgba(16, 185, 129, 0.08)"
               } 0%, transparent 70%)`,
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
             }}
             animate={{
-              x: [0, Math.random() * 100 - 50],
-              y: [0, Math.random() * 100 - 50],
-              scale: [1, 1.2, 1],
+              x: [0, Math.random() * 50 - 25],
+              y: [0, Math.random() * 50 - 25],
+              scale: [1, 1.1, 1],
             }}
             transition={{
               duration: Math.random() * 8 + 8,
@@ -120,7 +120,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
-          padding: "40px",
+          padding: "20px",
           position: "relative",
           zIndex: 2,
         }}
@@ -129,16 +129,16 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8 }}
-          style={{ textAlign: "center", maxWidth: "500px" }}
+          style={{ textAlign: "center", maxWidth: "90%" }}
         >
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
             style={{
-              width: "120px",
-              height: "120px",
-              margin: "0 auto 30px",
-              borderRadius: "30px",
+              width: "100px",
+              height: "100px",
+              margin: "0 auto 20px",
+              borderRadius: "25px",
               background: "linear-gradient(135deg, #a855f7, #3b82f6, #10b981)",
               display: "flex",
               alignItems: "center",
@@ -146,15 +146,15 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
               boxShadow: "0 20px 60px rgba(168, 85, 247, 0.3)",
             }}
           >
-            <Sparkles size={60} color="white" />
+            <Sparkles size={50} color="white" />
           </motion.div>
 
           <Title
             level={1}
             style={{
-              fontSize: "3.5rem",
+              fontSize: "clamp(2rem, 5vw, 3rem)",
               fontWeight: 800,
-              margin: "0 0 20px 0",
+              margin: "0 0 15px 0",
               background: "linear-gradient(135deg, #fff 0%, #a855f7 50%, #3b82f6 100%)",
               backgroundClip: "text",
               WebkitBackgroundClip: "text",
@@ -166,18 +166,18 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
 
           <Text
             style={{
-              fontSize: "1.4rem",
+              fontSize: "clamp(1rem, 2.5vw, 1.3rem)",
               color: "rgba(255, 255, 255, 0.8)",
-              marginBottom: "40px",
+              marginBottom: "30px",
               display: "block",
               lineHeight: 1.6,
             }}
           >
-            Master your next job interview with AI-powered practice sessions
+            שלוט בראיון העבודה הבא שלך עם סימולציות מונעות בינה מלאכותית
           </Text>
 
           {/* Rotating Features */}
-          <div style={{ height: "60px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ height: "50px", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentFeature}
@@ -188,16 +188,16 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: "12px",
-                  padding: "16px 24px",
+                  gap: "10px",
+                  padding: "12px 20px",
                   background: "rgba(30, 41, 59, 0.4)",
-                  borderRadius: "16px",
+                  borderRadius: "12px",
                   border: "1px solid rgba(255, 255, 255, 0.1)",
                   backdropFilter: "blur(20px)",
                 }}
               >
                 <div style={{ color: "#a855f7" }}>{features[currentFeature].icon}</div>
-                <Text style={{ color: "#fff", fontSize: "1.1rem", fontWeight: 600 }}>
+                <Text style={{ color: "#fff", fontSize: "1rem", fontWeight: 600 }}>
                   {features[currentFeature].text}
                 </Text>
               </motion.div>
@@ -213,7 +213,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          padding: "40px",
+          padding: "20px",
           position: "relative",
           zIndex: 2,
         }}
@@ -222,56 +222,56 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          style={{ width: "100%", maxWidth: "450px" }}
+          style={{ width: "100%", maxWidth: "400px" }}
         >
           <Card
             style={{
               background: "rgba(30, 41, 59, 0.8)",
-              borderRadius: "24px",
+              borderRadius: "20px",
               boxShadow: "0 25px 100px rgba(0, 0, 0, 0.4)",
               border: "1px solid rgba(255, 255, 255, 0.1)",
               backdropFilter: "blur(30px)",
               overflow: "hidden",
-              padding: "20px",
+              padding: "15px",
             }}
           >
-            <div style={{ textAlign: "center", marginBottom: "40px" }}>
+            <div style={{ textAlign: "center", marginBottom: "30px" }}>
               <Title
                 level={2}
                 style={{
                   color: "#fff",
                   marginBottom: "8px",
                   fontWeight: 700,
-                  fontSize: "2rem",
+                  fontSize: "1.8rem",
                 }}
               >
-                Welcome Back! 👋
+                ברוך הבא! 👋
               </Title>
               <Text
                 style={{
                   color: "rgba(255, 255, 255, 0.7)",
-                  fontSize: "1.1rem",
+                  fontSize: "1rem",
                 }}
               >
-                Sign in to continue your interview journey
+                התחבר כדי להמשיך את מסע הראיונות שלך
               </Text>
             </div>
 
             <Form layout="vertical" onFinish={handleLogin} size="large">
               <Form.Item
-                label={<Text style={{ color: "rgba(255, 255, 255, 0.8)", fontWeight: 600 }}>Email Address</Text>}
+                label={<Text style={{ color: "rgba(255, 255, 255, 0.8)", fontWeight: 600 }}>כתובת אימייל</Text>}
                 name="email"
                 rules={[
-                  { required: true, message: "Please enter your email" },
-                  { type: "email", message: "Please enter a valid email" },
+                  { required: true, message: "אנא הכנס את האימייל שלך" },
+                  { type: "email", message: "אנא הכנס אימייל תקין" },
                 ]}
               >
                 <Input
-                  prefix={<Mail size={20} style={{ color: "#a855f7" }} />}
-                  placeholder="Enter your email"
+                  prefix={<Mail size={18} style={{ color: "#a855f7" }} />}
+                  placeholder="הכנס את האימייל שלך"
                   style={{
-                    height: "56px",
-                    borderRadius: "16px",
+                    height: "48px",
+                    borderRadius: "12px",
                     background: "rgba(15, 23, 42, 0.6)",
                     border: "1px solid rgba(99, 102, 241, 0.3)",
                     color: "#fff",
@@ -281,13 +281,13 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
               </Form.Item>
 
               <Form.Item
-                label={<Text style={{ color: "rgba(255, 255, 255, 0.8)", fontWeight: 600 }}>Password</Text>}
+                label={<Text style={{ color: "rgba(255, 255, 255, 0.8)", fontWeight: 600 }}>סיסמא</Text>}
                 name="password"
-                rules={[{ required: true, message: "Please enter your password" }]}
+                rules={[{ required: true, message: "אנא הכנס את הסיסמא שלך" }]}
               >
                 <Input
                   type={showPassword ? "text" : "password"}
-                  prefix={<Lock size={20} style={{ color: "#a855f7" }} />}
+                  prefix={<Lock size={18} style={{ color: "#a855f7" }} />}
                   suffix={
                     <button
                       type="button"
@@ -300,13 +300,13 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
                         padding: "4px",
                       }}
                     >
-                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   }
-                  placeholder="Enter your password"
+                  placeholder="הכנס את הסיסמא שלך"
                   style={{
-                    height: "56px",
-                    borderRadius: "16px",
+                    height: "48px",
+                    borderRadius: "12px",
                     background: "rgba(15, 23, 42, 0.6)",
                     border: "1px solid rgba(99, 102, 241, 0.3)",
                     color: "#fff",
@@ -320,7 +320,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  marginBottom: "30px",
+                  marginBottom: "25px",
                 }}
               >
                 <Checkbox
@@ -328,9 +328,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
                   onChange={(e) => setRememberMe(e.target.checked)}
                   style={{ color: "rgba(255, 255, 255, 0.7)" }}
                 >
-                  <Text style={{ color: "rgba(255, 255, 255, 0.7)" }}>Remember me</Text>
+                  <Text style={{ color: "rgba(255, 255, 255, 0.7)" }}>זכור אותי</Text>
                 </Checkbox>
-                <a style={{ color: "#a855f7", fontWeight: 600 }}>Forgot password?</a>
+                <a style={{ color: "#a855f7", fontWeight: 600 }}>שכחת סיסמא?</a>
               </div>
 
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
@@ -339,16 +339,16 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
                   htmlType="submit"
                   loading={loading}
                   style={{
-                    height: "56px",
+                    height: "48px",
                     width: "100%",
-                    borderRadius: "16px",
+                    borderRadius: "12px",
                     background: loading
                       ? "linear-gradient(90deg, #6366f1, #8b5cf6)"
                       : "linear-gradient(90deg, #a855f7, #3b82f6)",
                     border: "none",
-                    fontSize: "1.1rem",
+                    fontSize: "1rem",
                     fontWeight: 700,
-                    marginBottom: "24px",
+                    marginBottom: "20px",
                     boxShadow: "0 10px 30px rgba(168, 85, 247, 0.3)",
                     transition: "all 0.3s ease",
                   }}
@@ -359,24 +359,24 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
                         animate={{ rotate: 360 }}
                         transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
                         style={{
-                          width: "20px",
-                          height: "20px",
+                          width: "18px",
+                          height: "18px",
                           border: "2px solid rgba(255, 255, 255, 0.3)",
                           borderTop: "2px solid #fff",
                           borderRadius: "50%",
                         }}
                       />
-                      Signing you in...
+                      מתחבר...
                     </div>
                   ) : (
-                    "Sign In"
+                    "התחבר"
                   )}
                 </Button>
               </motion.div>
 
               <div style={{ textAlign: "center" }}>
                 <Text style={{ color: "rgba(255, 255, 255, 0.7)" }}>
-                  Don't have an account?{" "}
+                  אין לך חשבון?{" "}
                   <motion.a
                     whileHover={{ scale: 1.05 }}
                     onClick={() => navigate("/register")}
@@ -387,7 +387,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
                       textDecoration: "none",
                     }}
                   >
-                    Create Account
+                    צור חשבון
                   </motion.a>
                 </Text>
               </div>
