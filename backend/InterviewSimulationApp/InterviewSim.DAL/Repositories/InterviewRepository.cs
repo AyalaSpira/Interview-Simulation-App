@@ -31,6 +31,7 @@ public class InterviewRepository : IInterviewRepository
         return interview;
     }
 
+
     // קבלת שאלות ראיון לפי מזהה ראיון
     public async Task<List<string>> GetInterviewQuestionsAsync(int interviewId)
     {
@@ -41,7 +42,8 @@ public class InterviewRepository : IInterviewRepository
     // Fix for CS1997: Since 'InterviewRepository.SaveInterviewAnswersAsync(int, List<string>)' is an async method that returns 'Task', a return keyword must not be followed by an object expression  
     public async Task SaveInterviewAnswersAsync(int interviewId, List<string> answers)
     {
-        Console.WriteLine("----try saved answers------");
+        Console.WriteLine("---- Saving interview answers ------");
+
         var interview = await _context.Interviews.FindAsync(interviewId);
         if (interview == null)
         {
@@ -49,12 +51,25 @@ public class InterviewRepository : IInterviewRepository
             throw new Exception("Interview not found.");
         }
 
-        interview.Status = "Completed"; // Update status  
-        interview.Answers = answers; // Save answers  
-      await  UpdateInterviewAsync(interview); await _context.SaveChangesAsync();
-        Console.WriteLine($"Answers saved for interview {interviewId}: {string.Join(", ", answers)}");
-        Console.WriteLine(interview.Answers); // Correctly return a Task instead of an object expression  
-      
+        if (answers == null || answers.Count == 0)
+        {
+            Console.WriteLine("No answers submitted.");
+            throw new Exception("Answers list is empty.");
+        }
+
+        // הצגת תשובות ישנות וחדשות
+        Console.WriteLine("OLD Answers: " + string.Join(" || ", interview.Answers ?? new List<string>()));
+        Console.WriteLine("NEW Answers: " + string.Join(" || ", answers));
+
+        // עדכון תשובות וסטטוס
+        interview.Answers = new List<string>(answers);
+        interview.Status = "Completed";
+
+        // שמירה
+        await UpdateInterviewAsync(interview);
+        await _context.SaveChangesAsync();
+
+        Console.WriteLine($"✅ Answers saved for interview {interviewId} and status set to 'Completed'");
     }
 
     // שמירת דוח ראיון
