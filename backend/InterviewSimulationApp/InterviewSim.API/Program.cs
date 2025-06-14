@@ -74,11 +74,13 @@ builder.Services.AddCors(options =>
 });
 
 // === DbContext ===
-builder.Services.AddDbContextPool<InterviewSimContext>(options => // השינוי כאן ל-AddDbContextPool
+builder.Services.AddDbContextPool<InterviewSimContext>(options =>
     options.UseMySql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
-        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))
+        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection")),
+        mySqlOptions => mySqlOptions.EnableRetryOnFailure()
     ));
+
 
 // === Dependency Injection ===
 builder.Services.AddScoped<IUserRepository, UserRepository>();
