@@ -28,7 +28,6 @@ namespace InterviewSim.BLL.Implementations
         }
 
 
-        // מקבלת תוכן רזומה ומנתחת את תחום העבודה בונה פרומט לבינה כדי להוציא את התחום מהתוכן
         public async Task<string> AnalyzeResumeAsync(string resumeContent)
         {
             var prompt = $@"
@@ -66,16 +65,27 @@ Resume Text:
                 response.EnsureSuccessStatusCode();
 
                 var responseString = await response.Content.ReadAsStringAsync();
-                var jsonResponse = JsonSerializer.Deserialize<OpenAIResponse>(responseString);
+                Console.WriteLine("Raw AI response:\n" + responseString);
 
-                var aiResponse = jsonResponse?.Choices?[0].Message?.Content.Trim();
+                var openAiResponse = JsonSerializer.Deserialize<OpenAIResponse>(responseString);
+                var aiContent = openAiResponse?.Choices?[0].Message?.Content?.Trim();
 
-                Console.WriteLine("AI Resume Analysis Result:\n" + aiResponse);
+                if (string.IsNullOrEmpty(aiContent))
+                {
+                    Console.WriteLine("AI response content is empty.");
+                    return "Unable to extract job field.";
+                }
 
-                return aiResponse ?? "Unable to extract job field.";
+                // ניקוי מיותר של סימני קוד
+                aiContent = aiContent.Trim().Trim('`').Trim();
+
+                Console.WriteLine("Clean AI content:\n" + aiContent);
+
+                return aiContent;
             }
             catch (Exception ex)
             {
+                Console.WriteLine("Error analyzing resume: " + ex.Message);
                 return $"Error analyzing resume: {ex.Message}";
             }
         }
