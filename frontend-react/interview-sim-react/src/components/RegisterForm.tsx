@@ -74,6 +74,7 @@ type RegisterFormProps = {
       if (response.token) {
         message.success("🎉 ברוך הבא ל-InterviewAI Pro! מעביר לעמוד ההתחברות...")
         setTimeout(() => {
+          onRegisterSuccess()
           navigate("/login") // מעבר ללוגין אחרי הרשמה מוצלחת
         }, 1500)
       } else {
@@ -87,7 +88,6 @@ type RegisterFormProps = {
     }
   }
 
-      onRegisterSuccess()
 
   const nextStep = () => {
     if (currentStep < 2) setCurrentStep(currentStep + 1)
