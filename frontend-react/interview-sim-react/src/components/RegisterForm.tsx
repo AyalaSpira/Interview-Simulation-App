@@ -3,7 +3,6 @@
 "use client"
 
 // הוסף את השורה הבאה בתחילת הקובץ כדי לפתור שגיאת TS1208
-export {}; 
 
 import type React from "react"
 import { useState } from "react" // useEffect ו-useRef אינם נחוצים יותר לניווט אוטומטי
@@ -12,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { UploadCloud, User, Mail, Lock, FileText, CheckCircle, Eye, EyeOff, Shield, Target } from "lucide-react"
 import { registerUser, loginUser } from "../services/authService" // loginUser עדיין נחוץ לנסות שמירת טוקן
 import { useNavigate } from "react-router-dom" // נחוץ עבור כפתור "עבור להתחברות" וכפתור "כבר יש לך חשבון?"
+export {}; 
 
 const { Title, Text } = Typography
 
