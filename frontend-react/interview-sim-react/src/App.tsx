@@ -494,7 +494,13 @@ const App = () => {
 
           {/* עמודי אימות */}
           <Route path="/login" element={!token ? <LoginForm onLogin={handleLogin} /> : <Navigate to="/home" />} />
-          <Route path="/register" element={!token ? <RegisterForm onLogin={handleLogin} /> : <Navigate to="/home" />} />
+<Route
+  path="/register"
+  element={
+    !token ? <RegisterForm onRegisterSuccess={() => navigate("/login")} /> : <Navigate to="/home" />
+  }
+/>
+
 
           {/* עמודים מוגנים */}
           <Route path="/home" element={token ? <Home onLogout={handleLogout} /> : <Navigate to="/login" />} />

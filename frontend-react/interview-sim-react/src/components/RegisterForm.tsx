@@ -10,11 +10,12 @@ import { useNavigate } from "react-router-dom"
 
 const { Title, Text } = Typography
 
-interface RegisterFormProps {
-  onLogin: (token: string) => void
+type RegisterFormProps = {
+  onRegisterSuccess: () => void | Promise<void>
 }
 
-const RegisterForm: React.FC<RegisterFormProps> = ({ onLogin }) => {
+
+const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
   const [file, setFile] = useState<File | null>(null)
   const [password, setPassword] = useState<string>("")
   const [confirmPassword, setConfirmPassword] = useState<string>("")
@@ -35,7 +36,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onLogin }) => {
     if (/[^A-Za-z0-9]/.test(pwd)) strength += 25
     return strength
   }
-
+type RegisterFormProps = {
+  onRegisterSuccess: () => void
+}
   const passwordStrength = getPasswordStrength(password)
   const getStrengthColor = () => {
     if (passwordStrength < 50) return "#ef4444"
@@ -83,6 +86,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onLogin }) => {
       setLoading(false)
     }
   }
+
+      onRegisterSuccess()
 
   const nextStep = () => {
     if (currentStep < 2) setCurrentStep(currentStep + 1)
