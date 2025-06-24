@@ -200,6 +200,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onLogin }) => {
             </Text>
           </div>
 
+
           {/* Progress Steps */}
           <div style={{ marginBottom: "30px" }}>
             <div
