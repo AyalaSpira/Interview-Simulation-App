@@ -1,3 +1,5 @@
+// RegisterForm.tsx
+
 "use client"
 
 import type React from "react"
@@ -5,7 +7,7 @@ import { useState } from "react"
 import { Form, Input, Upload, Button, message, Card, Typography, Progress, Checkbox } from "antd"
 import { motion, AnimatePresence } from "framer-motion"
 import { UploadCloud, User, Mail, Lock, FileText, CheckCircle, Eye, EyeOff, Shield, Target } from "lucide-react"
-import { registerUser } from "../services/authService"
+import { registerUser, loginUser } from "../services/authService" // ודא ש-loginUser מיובא
 import { useNavigate } from "react-router-dom"
 
 const { Title, Text } = Typography
@@ -13,7 +15,6 @@ const { Title, Text } = Typography
 type RegisterFormProps = {
   onRegisterSuccess: () => void | Promise<void>
 }
-
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
   const [file, setFile] = useState<File | null>(null)
@@ -36,9 +37,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
     if (/[^A-Za-z0-9]/.test(pwd)) strength += 25
     return strength
   }
-type RegisterFormProps = {
-  onRegisterSuccess: () => void
-}
+
   const passwordStrength = getPasswordStrength(password)
   const getStrengthColor = () => {
     if (passwordStrength < 50) return "#ef4444"
@@ -52,54 +51,73 @@ type RegisterFormProps = {
     { title: "העלאת קורות חיים", icon: <FileText size={18} /> },
   ]
 
+  const isCurrentStepValid = () => {
+    switch (currentStep) {
+      case 0: // פרטים אישיים
+        return username.trim() !== "" && userEmail.trim() !== "" && /\S+@\S+\.\S+/.test(userEmail);
+      case 1: // אבטחה
+        return password.length >= 8 && password === confirmPassword;
+      case 2: // העלאת קורות חיים
+        return file !== null && agreedToTerms;
+      default:
+        return false;
+    }
+  };
+
   const handleRegister = async () => {
-    if (!file || !username || !password || !userEmail) {
-      message.error("אנא מלא את כל השדות והעלה קורות חיים.")
-      return
+    // וודא שכל השלבים תקינים לפני ניסיון הרשמה
+    if (!isCurrentStepValid() && currentStep === 2) {
+      message.error("אנא מלא את כל השדות הנדרשים ואשר את התנאים.");
+      return;
     }
 
-    if (password !== confirmPassword) {
-      message.error("הסיסמאות אינן תואמות!")
-      return
-    }
-
-    if (!agreedToTerms) {
-      message.error("אנא אשר את תנאי השימוש.")
-      return
-    }
-
-    setLoading(true)
+    setLoading(true);
     try {
-      const response = await registerUser(username, userEmail, password, file)
-      if (response.token) {
-        console.log("עובר ל-login...");
+      // 1. נסה לבצע הרשמה
+      // registerUser לא מחזיר token. הוא רק מוודא שהרישום הצליח.
+      await registerUser(username, userEmail, password, file as File);
+      console.log("Registration successful with server.");
+      message.success("🎉 הרשמה מוצלחת! מנסה להתחבר כעת...");
 
-        message.success("🎉 ברוך הבא ל-InterviewAI Pro! מעביר לעמוד ההתחברות...")
-        setTimeout(async () => { // הוספת async כאן
-  await onRegisterSuccess() // ו-await כאן
-  navigate("/login")
-          console.log("עובר ל-login...");
+      // 2. בצע התחברות אוטומטית עם פרטי המשתמש החדשים
+      const loginResponse = await loginUser(userEmail, password);
+      console.log("Automatic login response:", loginResponse);
 
-}, 1500)
+      if (loginResponse.token) {
+        console.log("אוטומטי התחברות הצליחה! מנווט ללוגין...");
+        message.success("ברוך הבא ל-InterviewAI Pro!");
+        // הפעלת onRegisterSuccess וניווט לאחר השהיה קצרה לחוויה טובה יותר
+        setTimeout(async () => {
+          await onRegisterSuccess(); // ודא שפונקציה זו מסתיימת
+          navigate("/login"); // ניווט לעמוד הלוגין
+        }, 1500);
       } else {
-        message.error("ההרשמה נכשלה. אנא נסה שוב.")
+        // אם ההתחברות האוטומטית נכשלה
+        console.error("התחברות אוטומטית נכשלה לאחר הרשמה:", loginResponse.error);
+        message.error(`הרשמה מוצלחת, אך ההתחברות האוטומטית נכשלה: ${loginResponse.error}. אנא נסה להתחבר ידנית.`);
+        // עדיין ננווט לדף הלוגין כדי שהמשתמש יוכל לנסות להתחבר בעצמו
+        setTimeout(() => navigate("/login"), 2000);
       }
-    } catch (error) {
-      console.error("Registration failed. Error:", error)
-      message.error("ההרשמה נכשלה. ראה קונסול לפרטים.")
+    } catch (error: any) {
+      console.error("Registration process failed. Error:", error);
+      // הצג הודעת שגיאה מהשרת אם קיימת, אחרת הודעה כללית
+      message.error(`ההרשמה נכשלה. ${error.message || "אירעה שגיאה בלתי צפויה."}`);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
-
+  };
 
   const nextStep = () => {
-    if (currentStep < 2) setCurrentStep(currentStep + 1)
-  }
+    if (isCurrentStepValid() && currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    } else if (!isCurrentStepValid()) {
+      message.error("אנא מלא את כל השדות הנדרשים בשלב זה באופן תקין.");
+    }
+  };
 
   const prevStep = () => {
-    if (currentStep > 0) setCurrentStep(currentStep - 1)
-  }
+    if (currentStep > 0) setCurrentStep(currentStep - 1);
+  };
 
   return (
     <div
@@ -128,8 +146,8 @@ type RegisterFormProps = {
                 i % 3 === 0
                   ? "rgba(168, 85, 247, 0.08)"
                   : i % 3 === 1
-                    ? "rgba(59, 130, 246, 0.08)"
-                    : "rgba(16, 185, 129, 0.08)"
+                  ? "rgba(59, 130, 246, 0.08)"
+                  : "rgba(16, 185, 129, 0.08)"
               } 0%, transparent 70%)`,
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
@@ -209,7 +227,6 @@ type RegisterFormProps = {
             </Text>
           </div>
 
-
           {/* Progress Steps */}
           <div style={{ marginBottom: "30px" }}>
             <div
@@ -263,7 +280,7 @@ type RegisterFormProps = {
               ))}
             </div>
             <Progress
-              percent={(currentStep / 2) * 100}
+              percent={(currentStep / (steps.length - 1)) * 100}
               showInfo={false}
               strokeColor={{
                 "0%": "#a855f7",
@@ -287,6 +304,8 @@ type RegisterFormProps = {
                   <Form.Item
                     label={<Text style={{ color: "rgba(255, 255, 255, 0.8)", fontWeight: 600 }}>שם מלא</Text>}
                     required
+                    validateStatus={username.trim() === "" ? "error" : ""}
+                    help={username.trim() === "" ? "שם מלא נדרש" : ""}
                   >
                     <Input
                       value={username}
@@ -307,6 +326,8 @@ type RegisterFormProps = {
                   <Form.Item
                     label={<Text style={{ color: "rgba(255, 255, 255, 0.8)", fontWeight: 600 }}>כתובת אימייל</Text>}
                     required
+                    validateStatus={!/\S+@\S+\.\S+/.test(userEmail) && userEmail.trim() !== "" ? "error" : ""}
+                    help={!/\S+@\S+\.\S+/.test(userEmail) && userEmail.trim() !== "" ? "פורמט אימייל לא תקין" : ""}
                   >
                     <Input
                       value={userEmail}
@@ -338,6 +359,8 @@ type RegisterFormProps = {
                   <Form.Item
                     label={<Text style={{ color: "rgba(255, 255, 255, 0.8)", fontWeight: 600 }}>סיסמא</Text>}
                     required
+                    validateStatus={password.length < 8 && password.trim() !== "" ? "error" : ""}
+                    help={password.length < 8 && password.trim() !== "" ? "הסיסמא חייבת להיות לפחות 8 תווים" : ""}
                   >
                     <Input
                       type={showPassword ? "text" : "password"}
@@ -390,6 +413,8 @@ type RegisterFormProps = {
                   <Form.Item
                     label={<Text style={{ color: "rgba(255, 255, 255, 0.8)", fontWeight: 600 }}>אישור סיסמא</Text>}
                     required
+                    validateStatus={confirmPassword && password !== confirmPassword ? "error" : ""}
+                    help={confirmPassword && password !== confirmPassword ? "הסיסמאות אינן תואמות" : ""}
                   >
                     <Input
                       type={showConfirmPassword ? "text" : "password"}
@@ -423,11 +448,6 @@ type RegisterFormProps = {
                         fontSize: "1rem",
                       }}
                     />
-                    {confirmPassword && password !== confirmPassword && (
-                      <Text style={{ color: "#ef4444", fontSize: "0.9rem", marginTop: "4px" }}>
-                        הסיסמאות אינן תואמות
-                      </Text>
-                    )}
                   </Form.Item>
                 </motion.div>
               )}
@@ -443,6 +463,9 @@ type RegisterFormProps = {
                 >
                   <Form.Item
                     label={<Text style={{ color: "rgba(255, 255, 255, 0.8)", fontWeight: 600 }}>העלאת קורות חיים</Text>}
+                    required
+                    validateStatus={!file ? "error" : ""}
+                    help={!file ? "יש להעלות קורות חיים" : ""}
                   >
                     <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
                       <Upload.Dragger
@@ -528,7 +551,11 @@ type RegisterFormProps = {
                     </motion.div>
                   </Form.Item>
 
-                  <Form.Item>
+                  <Form.Item
+                    name="agreement"
+                    valuePropName="checked"
+                    rules={[{ validator: (_, value) => value ? Promise.resolve() : Promise.reject('חובה לאשר את התנאים') }]}
+                  >
                     <Checkbox
                       checked={agreedToTerms}
                       onChange={(e) => setAgreedToTerms(e.target.checked)}
@@ -570,13 +597,10 @@ type RegisterFormProps = {
                 </Button>
               )}
 
-              {currentStep < 2 ? (
+              {currentStep < steps.length - 1 ? (
                 <Button
                   onClick={nextStep}
-                  disabled={
-                    (currentStep === 0 && (!username || !userEmail)) ||
-                    (currentStep === 1 && (!password || !confirmPassword || password !== confirmPassword))
-                  }
+                  disabled={!isCurrentStepValid()}
                   style={{
                     height: "48px",
                     flex: 1,
@@ -596,7 +620,7 @@ type RegisterFormProps = {
                     type="primary"
                     htmlType="submit"
                     loading={loading}
-                    disabled={!file || !agreedToTerms}
+                    disabled={!isCurrentStepValid() || loading}
                     style={{
                       height: "48px",
                       width: "100%",
@@ -657,4 +681,4 @@ type RegisterFormProps = {
   )
 }
 
-export default RegisterForm
+export default RegisterForm;

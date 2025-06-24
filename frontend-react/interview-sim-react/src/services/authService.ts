@@ -20,10 +20,6 @@ export const registerUser = async (username: string, email: string, password: st
     body: formData,
   });
 
-  if (!response.ok) {
-    throw new Error("Registration failed");
-  }
-
   return await response.json();
 };
 
