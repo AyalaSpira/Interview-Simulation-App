@@ -8,11 +8,12 @@ import { Form, Input, Upload, Button, message, Card, Typography, Progress, Check
 import { motion, AnimatePresence } from "framer-motion"
 import { UploadCloud, User, Mail, Lock, FileText, CheckCircle, Eye, EyeOff, Shield, Target } from "lucide-react"
 import { registerUser, loginUser } from "../services/authService" // ודא ש-loginUser מיובא
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom" // נשמור את useNavigate כאן אם נרצה ניווט פנימי נוסף, אך הניווט הראשי יהיה ב-onRegisterSuccess
 
 const { Title, Text } = Typography
 
 type RegisterFormProps = {
+  // onRegisterSuccess יטפל גם בניווט
   onRegisterSuccess: () => void | Promise<void>
 }
 
@@ -27,7 +28,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
-  const navigate = useNavigate()
+  // const navigate = useNavigate() // לא נשתמש ב-navigate כאן לניווט הראשי
 
   const getPasswordStrength = (pwd: string) => {
     let strength = 0
@@ -65,7 +66,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
   };
 
   const handleRegister = async () => {
-    // וודא שכל השלבים תקינים לפני ניסיון הרשמה
     if (!isCurrentStepValid() && currentStep === 2) {
       message.error("אנא מלא את כל השדות הנדרשים ואשר את התנאים.");
       return;
@@ -74,7 +74,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
     setLoading(true);
     try {
       // 1. נסה לבצע הרשמה
-      // registerUser לא מחזיר token. הוא רק מוודא שהרישום הצליח.
       await registerUser(username, userEmail, password, file as File);
       console.log("Registration successful with server.");
       message.success("🎉 הרשמה מוצלחת! מנסה להתחבר כעת...");
@@ -84,23 +83,27 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
       console.log("Automatic login response:", loginResponse);
 
       if (loginResponse.token) {
-        console.log("אוטומטי התחברות הצליחה! מנווט ללוגין...");
+        console.log("התחברות אוטומטית הצליחה! מפעיל callback לניווט...");
         message.success("ברוך הבא ל-InterviewAI Pro!");
-        // הפעלת onRegisterSuccess וניווט לאחר השהיה קצרה לחוויה טובה יותר
+        // במקום navigate ישירות, נפעיל את ה-callback מה-props
+        // ה-callback הוא זה שאחראי כעת על הניווט לדף הלוגין
         setTimeout(async () => {
-          await onRegisterSuccess(); // ודא שפונקציה זו מסתיימת
-          navigate("/login"); // ניווט לעמוד הלוגין
+          await onRegisterSuccess(); // Call the parent callback to navigate
         }, 1500);
       } else {
         // אם ההתחברות האוטומטית נכשלה
         console.error("התחברות אוטומטית נכשלה לאחר הרשמה:", loginResponse.error);
         message.error(`הרשמה מוצלחת, אך ההתחברות האוטומטית נכשלה: ${loginResponse.error}. אנא נסה להתחבר ידנית.`);
-        // עדיין ננווט לדף הלוגין כדי שהמשתמש יוכל לנסות להתחבר בעצמו
-        setTimeout(() => navigate("/login"), 2000);
+        // במקרה זה, גם אם ההתחברות האוטומטית נכשלה, עדיין נרצה לנתב לדף הלוגין
+        // כאן ניתן להשתמש ב-navigate המקומי אם נשמור אותו
+        // אך עדיף שבמקרה כזה onRegisterSuccess עדיין ינווט ללוגין
+        setTimeout(async () => {
+          // נפעיל את onRegisterSuccess שיוביל ללוגין, גם אם לא הצלחנו להתחבר אוטומטית
+          await onRegisterSuccess();
+        }, 2000);
       }
     } catch (error: any) {
       console.error("Registration process failed. Error:", error);
-      // הצג הודעת שגיאה מהשרת אם קיימת, אחרת הודעה כללית
       message.error(`ההרשמה נכשלה. ${error.message || "אירעה שגיאה בלתי צפויה."}`);
     } finally {
       setLoading(false);
@@ -662,7 +665,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
                 כבר יש לך חשבון?{" "}
                 <motion.a
                   whileHover={{ scale: 1.05 }}
-                  onClick={() => navigate("/login")}
+                  // נשנה את זה כדי שיקרא ישירות ל-navigate כי זה ניווט פנימי קלאסי
+                  onClick={() => window.location.href = "/login"} // שימוש ב-window.location.href ליתר ביטחון
                   style={{
                     color: "#a855f7",
                     fontWeight: 700,
