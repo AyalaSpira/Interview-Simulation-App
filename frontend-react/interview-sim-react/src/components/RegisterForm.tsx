@@ -3,18 +3,16 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react" // הוספנו useEffect
 import { Form, Input, Upload, Button, message, Card, Typography, Progress, Checkbox } from "antd"
 import { motion, AnimatePresence } from "framer-motion"
 import { UploadCloud, User, Mail, Lock, FileText, CheckCircle, Eye, EyeOff, Shield, Target } from "lucide-react"
-import { registerUser, loginUser } from "../services/authService" // ודא ש-loginUser מיובא
-import { useNavigate } from "react-router-dom" // נשמור את useNavigate כאן אם נרצה ניווט פנימי נוסף, אך הניווט הראשי יהיה ב-onRegisterSuccess
+import { registerUser, loginUser } from "../services/authService"
 
 const { Title, Text } = Typography
 
 type RegisterFormProps = {
-  // onRegisterSuccess יטפל גם בניווט
-  onRegisterSuccess: () => void | Promise<void>
+  onRegisterSuccess: () => void // הפונקציה לניווט
 }
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
@@ -28,7 +26,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
-  // const navigate = useNavigate() // לא נשתמש ב-navigate כאן לניווט הראשי
+  const [registrationCompleted, setRegistrationCompleted] = useState(false); // סטייט חדש לסימון סיום הרשמה והתחברות
 
   const getPasswordStrength = (pwd: string) => {
     let strength = 0
@@ -73,34 +71,22 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
 
     setLoading(true);
     try {
-      // 1. נסה לבצע הרשמה
       await registerUser(username, userEmail, password, file as File);
       console.log("Registration successful with server.");
       message.success("🎉 הרשמה מוצלחת! מנסה להתחבר כעת...");
 
-      // 2. בצע התחברות אוטומטית עם פרטי המשתמש החדשים
       const loginResponse = await loginUser(userEmail, password);
       console.log("Automatic login response:", loginResponse);
 
       if (loginResponse.token) {
-        console.log("התחברות אוטומטית הצליחה! מפעיל callback לניווט...");
+        console.log("התחברות אוטומטית הצליחה!");
         message.success("ברוך הבא ל-InterviewAI Pro!");
-        // במקום navigate ישירות, נפעיל את ה-callback מה-props
-        // ה-callback הוא זה שאחראי כעת על הניווט לדף הלוגין
-        setTimeout(async () => {
-          await onRegisterSuccess(); // Call the parent callback to navigate
-        }, 1500);
+        setRegistrationCompleted(true); // סמן שההרשמה וההתחברות הושלמו בהצלחה
       } else {
-        // אם ההתחברות האוטומטית נכשלה
         console.error("התחברות אוטומטית נכשלה לאחר הרשמה:", loginResponse.error);
         message.error(`הרשמה מוצלחת, אך ההתחברות האוטומטית נכשלה: ${loginResponse.error}. אנא נסה להתחבר ידנית.`);
-        // במקרה זה, גם אם ההתחברות האוטומטית נכשלה, עדיין נרצה לנתב לדף הלוגין
-        // כאן ניתן להשתמש ב-navigate המקומי אם נשמור אותו
-        // אך עדיף שבמקרה כזה onRegisterSuccess עדיין ינווט ללוגין
-        setTimeout(async () => {
-          // נפעיל את onRegisterSuccess שיוביל ללוגין, גם אם לא הצלחנו להתחבר אוטומטית
-          await onRegisterSuccess();
-        }, 2000);
+        // גם אם ההתחברות האוטומטית נכשלה, עדיין נסמן כ"הושלם" כדי לנסות לנווט
+        setRegistrationCompleted(true);
       }
     } catch (error: any) {
       console.error("Registration process failed. Error:", error);
@@ -109,6 +95,16 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
       setLoading(false);
     }
   };
+
+  // useEffect שיטפל בניווט פעם אחת בלבד לאחר סיום התהליך
+  useEffect(() => {
+    if (registrationCompleted) {
+      console.log("Registration completed, calling onRegisterSuccess for navigation.");
+      onRegisterSuccess();
+      // אופציונלי: איפוס הסטייט כדי למנוע קריאות עתידיות בטעות, אם הקומפוננטה נשארת ב-DOM
+      // setRegistrationCompleted(false);
+    }
+  }, [registrationCompleted, onRegisterSuccess]); // onRegisterSuccess נשאר כתלות כי הוא מגיע כ-prop
 
   const nextStep = () => {
     if (isCurrentStepValid() && currentStep < steps.length - 1) {
@@ -135,7 +131,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
         overflow: "hidden",
       }}
     >
-      {/* Animated Background */}
+      {/* Animated Background - ללא שינוי */}
       <div style={{ position: "absolute", inset: 0 }}>
         {[...Array(10)].map((_, i) => (
           <motion.div
@@ -186,7 +182,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
             padding: "15px",
           }}
         >
-          {/* Header */}
+          {/* Header - ללא שינוי */}
           <div style={{ textAlign: "center", marginBottom: "30px" }}>
             <motion.div
               animate={{ rotate: 360 }}
@@ -230,7 +226,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
             </Text>
           </div>
 
-          {/* Progress Steps */}
+          {/* Progress Steps - ללא שינוי */}
           <div style={{ marginBottom: "30px" }}>
             <div
               style={{
@@ -295,7 +291,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
 
           <Form layout="vertical" onFinish={handleRegister} size="large">
             <AnimatePresence mode="wait">
-              {/* Step 1: Personal Info */}
+              {/* Step 1: Personal Info - ללא שינוי */}
               {currentStep === 0 && (
                 <motion.div
                   key="step1"
@@ -350,7 +346,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
                 </motion.div>
               )}
 
-              {/* Step 2: Security */}
+              {/* Step 2: Security - ללא שינוי */}
               {currentStep === 1 && (
                 <motion.div
                   key="step2"
@@ -455,7 +451,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
                 </motion.div>
               )}
 
-              {/* Step 3: Resume Upload */}
+              {/* Step 3: Resume Upload - ללא שינוי */}
               {currentStep === 2 && (
                 <motion.div
                   key="step3"
@@ -574,7 +570,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
               )}
             </AnimatePresence>
 
-            {/* Navigation Buttons */}
+            {/* Navigation Buttons - ללא שינוי */}
             <div
               style={{
                 display: "flex",
@@ -665,7 +661,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
                 כבר יש לך חשבון?{" "}
                 <motion.a
                   whileHover={{ scale: 1.05 }}
-                  // נשנה את זה כדי שיקרא ישירות ל-navigate כי זה ניווט פנימי קלאסי
                   onClick={() => window.location.href = "/login"} // שימוש ב-window.location.href ליתר ביטחון
                   style={{
                     color: "#a855f7",
