@@ -75,11 +75,12 @@ type RegisterFormProps = {
         console.log("עובר ל-login...");
 
         message.success("🎉 ברוך הבא ל-InterviewAI Pro! מעביר לעמוד ההתחברות...")
-        setTimeout(() => {
+        setTimeout(async () => { // הוספת async כאן
+  await onRegisterSuccess() // ו-await כאן
+  navigate("/login")
           console.log("עובר ל-login...");
-          onRegisterSuccess()
-          navigate("/login") // מעבר ללוגין אחרי הרשמה מוצלחת
-        }, 1500)
+
+}, 1500)
       } else {
         message.error("ההרשמה נכשלה. אנא נסה שוב.")
       }
