@@ -1,27 +1,28 @@
+// RegisterForm.tsx
 
 "use client"
+
+// הוסף את השורה הבאה בתחילת הקובץ כדי לפתור שגיאת TS1208
 export {}; 
 
 import type React from "react"
-import { useState, useEffect } from "react" // useRef כבר לא נחוץ לניווט אוטומטי
+import { useState } from "react" // useEffect ו-useRef אינם נחוצים יותר לניווט אוטומטי
 import { Form, Input, Upload, Button, message, Card, Typography, Progress, Checkbox } from "antd"
 import { motion, AnimatePresence } from "framer-motion"
 import { UploadCloud, User, Mail, Lock, FileText, CheckCircle, Eye, EyeOff, Shield, Target } from "lucide-react"
-import { registerUser, loginUser } from "../services/authService"
-import { useNavigate } from "react-router-dom" // נשאר עבור כפתור ההתחברות הידני
+import { registerUser, loginUser } from "../services/authService" // loginUser עדיין נחוץ לנסות שמירת טוקן
+import { useNavigate } from "react-router-dom" // נחוץ עבור כפתור "עבור להתחברות" וכפתור "כבר יש לך חשבון?"
 
 const { Title, Text } = Typography
 
-// סוג הפרופס השתנה - onRegisterSuccess כבר לא נחוץ לניווט
+// סוג הפרופס השתנה - onRegisterSuccess הוסר, כי אין צורך ב-callback לניווט אוטומטי מקומפוננטת האב
 type RegisterFormProps = {
-  // onRegisterSuccess כאן הוא אם יש צורך לפעולה כלשהי בקומפוננטת האב,
-  // אך הוא לא אחראי על ניווט אוטומטי.
-  // אם אין צורך בפעולה כלשהי בקומפוננטת האב, אפשר להסיר אותו לגמרי.
-  // למען השלמות, נשאיר אותו כרגע אך הוא לא יהיה אחראי לניווט.
-  onRegisterSuccess?: () => void
+  // אם בכל זאת יש צורך ב-callback כלשהו לקומפוננטת האב לאחר הרשמה מוצלחת (ללא קשר לניווט),
+  // ניתן להחזיר אותו כ-optional prop: onRegisterSuccess?: () => void;
+  // כרגע הוא מוסר כדי לפשט את הלוגיקה כפי שביקשת.
 }
 
-const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
+const RegisterForm: React.FC<RegisterFormProps> = ({ /* onRegisterSuccess */ }) => {
   const [file, setFile] = useState<File | null>(null)
   const [password, setPassword] = useState<string>("")
   const [confirmPassword, setConfirmPassword] = useState<string>("")
@@ -32,9 +33,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
-  // סטייט חדש לשליטה בהצגת כפתור ההתחברות לאחר סיום התהליך
-  const [showLoginButton, setShowLoginButton] = useState(false)
-  const navigate = useNavigate() // השארנו את useNavigate עבור כפתור "כבר יש לך חשבון?" ועבור הכפתור החדש
+  // סטייט חדש לשליטה בהצגת כפתור ההתחברות לאחר סיום תהליך הרישום
+  const [registrationSuccessDisplayed, setRegistrationSuccessDisplayed] = useState(false)
+  const navigate = useNavigate() // השארנו את useNavigate לניווט ידני
 
   const getPasswordStrength = (pwd: string) => {
     let strength = 0
@@ -83,38 +84,28 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
       console.log("Registration successful with server.");
       message.success("🎉 הרשמה מוצלחת! כעת תוכל להתחבר.");
 
-      // ננסה לבצע התחברות אוטומטית (אך לא ננווט אוטומטית)
+      // ננסה לבצע התחברות אוטומטית רק כדי לשמור את הטוקן ב-localStorage
+      // (אם שירות authService עושה זאת). אין ניווט אוטומטי מכאן.
       const loginResponse = await loginUser(userEmail, password);
-      console.log("Automatic login attempt response:", loginResponse);
+      console.log("Automatic login attempt response (for token storage):", loginResponse);
 
       if (loginResponse.token) {
-        console.log("התחברות אוטומטית פנימית הצליחה (הטוקן נשמר).");
-        // אם onRegisterSuccess קיים, נפעיל אותו (אך הוא לא מיועד לניווט אוטומטי)
-        if (onRegisterSuccess) {
-          onRegisterSuccess();
-        }
+        console.log("הטוקן נשמר בהצלחה ב-localStorage.");
       } else {
-        console.warn("התחברות אוטומטית נכשלה לאחר הרשמה, ייתכן שתצטרך להתחבר ידנית.");
-        // אם onRegisterSuccess קיים, נפעיל אותו (אך הוא לא מיועד לניווט אוטומטי)
-        if (onRegisterSuccess) {
-          onRegisterSuccess();
-        }
+        console.warn("התחברות אוטומטית פנימית נכשלה, אך ההרשמה הצליחה.");
       }
-      // ללא קשר אם ההתחברות האוטומטית הצליחה או נכשלה,
-      // נציג כעת את כפתור ההתחברות למשתמש.
-      setShowLoginButton(true);
+
+      // לאחר שהרשמה (וניסיון שמירת טוקן) הסתיימו, נציג את כפתור ההתחברות
+      setRegistrationSuccessDisplayed(true);
 
     } catch (error: any) {
       console.error("Registration process failed. Error:", error);
       message.error(`ההרשמה נכשלה. ${error.message || "אירעה שגיאה בלתי צפויה."}`);
-      setShowLoginButton(false); // במקרה של כישלון הרשמה, לא נציג את הכפתור
+      setRegistrationSuccessDisplayed(false); // במקרה של כישלון הרשמה, לא נציג את הכפתור
     } finally {
       setLoading(false);
     }
   };
-
-  // useEffects קודמים לניווט אוטומטי הוסרו
-  // useRef hasNavigated הוסר כי כבר אין ניווט אוטומטי שמנוהל על ידי useRef
 
   const nextStep = () => {
     if (isCurrentStepValid() && currentStep < steps.length - 1) {
@@ -141,7 +132,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
         overflow: "hidden",
       }}
     >
-      {/* Animated Background */}
+      {/* Animated Background - ללא שינוי */}
       <div style={{ position: "absolute", inset: 0 }}>
         {[...Array(10)].map((_, i) => (
           <motion.div
@@ -192,7 +183,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
             padding: "15px",
           }}
         >
-          {/* Header */}
+          {/* Header - ללא שינוי */}
           <div style={{ textAlign: "center", marginBottom: "30px" }}>
             <motion.div
               animate={{ rotate: 360 }}
@@ -236,7 +227,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
             </Text>
           </div>
 
-          {/* Progress Steps */}
+          {/* Progress Steps - ללא שינוי */}
           <div style={{ marginBottom: "30px" }}>
             <div
               style={{
@@ -299,6 +290,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
             />
           </div>
 
+          {/* טופס הרישום */}
           <Form layout="vertical" onFinish={handleRegister} size="large">
             <AnimatePresence mode="wait">
               {/* Step 1: Personal Info */}
@@ -588,7 +580,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
                 marginTop: "25px",
               }}
             >
-              {currentStep > 0 && !showLoginButton && ( // לא נציג כפתור "הקודם" אם כפתור התחברות מוצג
+              {/* כפתור "הקודם" - מוצג רק אם אנחנו לא בשלב הראשון ואין הרשמה מוצלחת */}
+              {currentStep > 0 && !registrationSuccessDisplayed && (
                 <Button
                   onClick={prevStep}
                   style={{
@@ -606,46 +599,26 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
                 </Button>
               )}
 
-              {currentStep < steps.length - 1 && !showLoginButton ? ( // לא נציג כפתור "הבא" אם כפתור התחברות מוצג
-                <Button
-                  onClick={nextStep}
-                  disabled={!isCurrentStepValid()}
-                  style={{
-                    height: "48px",
-                    flex: 1,
-                    borderRadius: "12px",
-                    background: "linear-gradient(90deg, #a855f7, #3b82f6)",
-                    border: "none",
-                    color: "#fff",
-                    fontSize: "1rem",
-                    fontWeight: 600,
-                  }}
-                >
-                  הבא
-                </Button>
-              ) : (
-                // הצג כפתור התחברות רק אם תהליך הרשמה והתחברות הסתיים, ולא מוצג כפתור "הבא"
-                showLoginButton ? (
-                  <motion.div style={{ flex: 1 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <Button
-                      type="primary"
-                      onClick={() => navigate("/login")} // ניווט ללוגין בלחיצה
-                      style={{
-                        height: "48px",
-                        width: "100%",
-                        borderRadius: "12px",
-                        background: "linear-gradient(90deg, #3b82f6, #a855f7)", // צבע אחר לכפתור התחברות
-                        border: "none",
-                        fontSize: "1rem",
-                        fontWeight: 700,
-                        boxShadow: "0 10px 30px rgba(59, 130, 246, 0.3)",
-                      }}
-                    >
-                      עבור להתחברות
-                    </Button>
-                  </motion.div>
+              {/* כפתור "הבא" או "צור חשבון" - מוצג רק אם אין הרשמה מוצלחת */}
+              {!registrationSuccessDisplayed ? (
+                currentStep < steps.length - 1 ? (
+                  <Button
+                    onClick={nextStep}
+                    disabled={!isCurrentStepValid()}
+                    style={{
+                      height: "48px",
+                      flex: 1,
+                      borderRadius: "12px",
+                      background: "linear-gradient(90deg, #a855f7, #3b82f6)",
+                      border: "none",
+                      color: "#fff",
+                      fontSize: "1rem",
+                      fontWeight: 600,
+                    }}
+                  >
+                    הבא
+                  </Button>
                 ) : (
-                  // כפתור "צור חשבון" אם עוד לא סיימנו את השלבים
                   <motion.div style={{ flex: 1 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                     <Button
                       type="primary"
@@ -686,6 +659,26 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
                     </Button>
                   </motion.div>
                 )
+              ) : (
+                // הצג כפתור "עבור להתחברות" רק אם registrationSuccessDisplayed הוא true
+                <motion.div style={{ flex: 1 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button
+                    type="primary"
+                    onClick={() => navigate("/login")} // ניווט ללוגין בלחיצה
+                    style={{
+                      height: "48px",
+                      width: "100%",
+                      borderRadius: "12px",
+                      background: "linear-gradient(90deg, #3b82f6, #a855f7)", // צבע שונה לכפתור התחברות
+                      border: "none",
+                      fontSize: "1rem",
+                      fontWeight: 700,
+                      boxShadow: "0 10px 30px rgba(59, 130, 246, 0.3)",
+                    }}
+                  >
+                    עבור להתחברות
+                  </Button>
+                </motion.div>
               )}
             </div>
 

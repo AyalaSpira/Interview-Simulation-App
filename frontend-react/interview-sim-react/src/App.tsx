@@ -1,703 +1,526 @@
-// RegisterForm.tsx
+// App.tsx
 
 "use client"
 
 import type React from "react"
-import { useState } from "react" // useEffect ו-useRef כבר לא נחוצים לניווט אוטומטי
-import { Form, Input, Upload, Button, message, Card, Typography, Progress, Checkbox } from "antd"
+import { useState, useEffect } from "react"
+import { Routes, Route, Navigate, useNavigate, useLocation, BrowserRouter } from "react-router-dom" // ודא ש-BrowserRouter מיובא אם הוא עוטף כאן את App
+import { AppBar, Toolbar, Button, Container, Box, Typography, Avatar, Menu, MenuItem, IconButton } from "@mui/material"
 import { motion, AnimatePresence } from "framer-motion"
-import { UploadCloud, User, Mail, Lock, FileText, CheckCircle, Eye, EyeOff, Shield, Target } from "lucide-react"
-import { registerUser, loginUser } from "./services/authService" // loginUser עדיין נחוץ לנסות שמירת טוקן
-import { useNavigate } from "react-router-dom" // נחוץ עבור כפתור "עבור להתחברות" וכפתור "כבר יש לך חשבון?"
+import {
+  ChevronDown,
+  User,
+  FileText,
+  Play,
+  BarChart2,
+  LogOut,
+  MenuIcon,
+  HomeIcon,
+  Settings,
+  Bell,
+  Search,
+  Sparkles,
+} from "lucide-react"
 
-const { Title, Text } = Typography
+// ייבוא קומפוננטות (ודא שהנתיבים נכונים אצלך)
+import Home from "./components/home"
+import LoginForm from "./components/LoginForm"
+import RegisterForm from "./components/RegisterForm"
+import UploadResume from "./components/UploadResume"
+import InterviewPage from "./components/InterviewPage"
+import Report from "./components/InterviewReport"
 
-type RegisterFormProps = {
-  // onRegisterSuccess אינו נחוץ לניווט אוטומטי, ולכן מוסר כאן
-  // אם בכל זאת יש צורך ב-callback כלשהו לקומפוננטת האב לאחר הרשמה מוצלחת,
-  // ניתן להחזיר אותו כ-optional prop: onRegisterSuccess?: () => void;
-}
-
-const RegisterForm: React.FC<RegisterFormProps> = ({ /* onRegisterSuccess */ }) => {
-  const [file, setFile] = useState<File | null>(null)
-  const [password, setPassword] = useState<string>("")
-  const [confirmPassword, setConfirmPassword] = useState<string>("")
-  const [username, setUsername] = useState<string>("")
-  const [userEmail, setUserEmail] = useState<string>("")
-  const [loading, setLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [agreedToTerms, setAgreedToTerms] = useState(false)
-  const [currentStep, setCurrentStep] = useState(0)
-  // סטייט חדש לשליטה בהצגת כפתור ההתחברות לאחר סיום תהליך הרישום
-  const [registrationSuccessDisplayed, setRegistrationSuccessDisplayed] = useState(false)
+const App = () => {
+  const [token, setToken] = useState<string | null>(localStorage.getItem("token"))
+  const [interviewId, setInterviewId] = useState<number | null>(null) // יש לוודא שימוש ב-interviewId אם הוא רלוונטי
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [notificationCount, setNotificationCount] = useState(3)
   const navigate = useNavigate()
+  const location = useLocation()
 
-  const getPasswordStrength = (pwd: string) => {
-    let strength = 0
-    if (pwd.length >= 8) strength += 25
-    if (/[A-Z]/.test(pwd)) strength += 25
-    if (/[0-9]/.test(pwd)) strength += 25
-    if (/[^A-Za-z0-9]/.test(pwd)) strength += 25
-    return strength
+  // ניהול טוקן ב-localStorage
+  useEffect(() => {
+    if (token) {
+      localStorage.setItem("token", token)
+    } else {
+      localStorage.removeItem("token")
+    }
+  }, [token])
+
+  // ניתוב אוטומטי לעמוד הלוגין בכניסה ראשונה או אם אין טוקן ב-root path
+  useEffect(() => {
+    if (!token && location.pathname === "/") {
+      navigate("/login")
+    }
+  }, [token, location.pathname, navigate]) // הוספנו navigate כתלות כדי למנוע אזהרות Lint, למרות שהוא יציב
+
+  // פונקציית התחברות
+  const handleLogin = (newToken: string) => {
+    console.log("Token received:", newToken)
+    setToken(newToken)
+    localStorage.setItem("token", newToken)
+    navigate("/home") // מעבר ל-HOME אחרי לוגין מוצלח
   }
 
-  const passwordStrength = getPasswordStrength(password)
-  const getStrengthColor = () => {
-    if (passwordStrength < 50) return "#ef4444"
-    if (passwordStrength < 75) return "#f59e0b"
-    return "#10b981"
+  // פונקציית יציאה
+  const handleLogout = () => {
+    setToken(null)
+    localStorage.removeItem("token")
+    navigate("/login") // חזרה ללוגין אחרי יציאה
   }
 
-  const steps = [
-    { title: "פרטים אישיים", icon: <User size={18} /> },
-    { title: "אבטחה", icon: <Shield size={18} /> },
-    { title: "העלאת קורות חיים", icon: <FileText size={18} /> },
-  ]
+  // פונקציות לניהול תפריטים ו-UI
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget)
+  }
 
-  const isCurrentStepValid = () => {
-    switch (currentStep) {
-      case 0: // Personal Info
-        return username.trim() !== "" && userEmail.trim() !== "" && /\S+@\S+\.\S+/.test(userEmail);
-      case 1: // Security
-        return password.length >= 8 && password === confirmPassword;
-      case 2: // Upload Resume
-        return file !== null && agreedToTerms;
-      default:
-        return false;
-    }
-  };
+  const handleMenuClose = () => {
+    setAnchorEl(null)
+  }
 
-  const handleRegister = async () => {
-    if (!isCurrentStepValid() && currentStep === 2) {
-      message.error("אנא מלא את כל השדות הנדרשים ואשר את התנאים.");
-      return;
-    }
+  const handleMobileMenuToggle = () => {
+    setMobileMenuOpen(!mobileMenuOpen)
+  }
 
-    setLoading(true);
-    try {
-      await registerUser(username, userEmail, password, file as File);
-      console.log("Registration successful with server.");
-      message.success("🎉 הרשמה מוצלחת! כעת תוכל להתחבר.");
+  const isAuthPage = location.pathname === "/login" || location.pathname === "/register"
 
-      // ננסה לבצע התחברות אוטומטית רק כדי לשמור את הטוקן, לא לניווט
-      const loginResponse = await loginUser(userEmail, password);
-      console.log("Automatic login attempt response (for token storage):", loginResponse);
-
-      if (loginResponse.token) {
-        console.log("הטוקן נשמר בהצלחה ב-localStorage.");
-      } else {
-        console.warn("התחברות אוטומטית פנימית נכשלה, אך ההרשמה הצליחה.");
-      }
-
-      // הצג את כפתור ההתחברות למשתמש לאחר סיום תהליך הרישום
-      setRegistrationSuccessDisplayed(true);
-
-    } catch (error: any) {
-      console.error("Registration process failed. Error:", error);
-      message.error(`ההרשמה נכשלה. ${error.message || "אירעה שגיאה בלתי צפויה."}`);
-      setRegistrationSuccessDisplayed(false); // במקרה של כישלון הרשמה, לא נציג את כפתור ההתחברות
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const nextStep = () => {
-    if (isCurrentStepValid() && currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else if (!isCurrentStepValid()) {
-      message.error("אנא מלא את כל השדות הנדרשים בשלב זה באופן תקין.");
-    }
-  };
-
-  const prevStep = () => {
-    if (currentStep > 0) setCurrentStep(currentStep - 1);
-  };
+  // סגנונות כפתורי ניווט ב-AppBar
+  const navButtonStyle = {
+    color: "#fff",
+    mx: 0.5,
+    py: 0.8,
+    px: 1.5,
+    borderRadius: "10px",
+    textTransform: "none",
+    fontSize: "0.9rem",
+    fontWeight: 600,
+    transition: "all 0.3s ease",
+    "&:hover": {
+      background: "rgba(255, 255, 255, 0.1)",
+      transform: "translateY(-2px)",
+      boxShadow: "0 4px 12px rgba(168, 85, 247, 0.3)",
+    },
+  }
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)",
+    <Box
+      sx={{
+        height: "100vh",
         display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "20px",
-        position: "relative",
+        flexDirection: "column",
         overflow: "hidden",
+        background: isAuthPage ? "transparent" : "linear-gradient(135deg, #0f172a, #1e293b)",
       }}
     >
-      {/* Animated Background - ללא שינוי */}
-      <div style={{ position: "absolute", inset: 0 }}>
-        {[...Array(10)].map((_, i) => (
-          <motion.div
-            key={i}
-            style={{
-              position: "absolute",
-              width: Math.random() * 120 + 40,
-              height: Math.random() * 120 + 40,
-              borderRadius: "50%",
-              background: `radial-gradient(circle, ${
-                i % 3 === 0
-                  ? "rgba(168, 85, 247, 0.08)"
-                  : i % 3 === 1
-                  ? "rgba(59, 130, 246, 0.08)"
-                  : "rgba(16, 185, 129, 0.08)"
-              } 0%, transparent 70%)`,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              x: [0, Math.random() * 40 - 20],
-              y: [0, Math.random() * 40 - 20],
-              scale: [1, 1.1, 1],
-            }}
-            transition={{
-              duration: Math.random() * 6 + 6,
-              repeat: Number.POSITIVE_INFINITY,
-              repeatType: "reverse",
-            }}
-          />
-        ))}
-      </div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        style={{ width: "100%", maxWidth: "500px", position: "relative", zIndex: 2 }}
-      >
-        <Card
-          style={{
-            background: "rgba(30, 41, 59, 0.8)",
-            borderRadius: "20px",
-            boxShadow: "0 25px 100px rgba(0, 0, 0, 0.4)",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            backdropFilter: "blur(30px)",
-            overflow: "hidden",
-            padding: "15px",
+      {/* AppBar (סרגל ניווט עליון) - מוצג רק אם יש טוקן וזה לא עמוד אימות */}
+      {token && !isAuthPage && (
+        <AppBar
+          position="static"
+          elevation={0}
+          sx={{
+            background: "rgba(15, 23, 42, 0.8)",
+            backdropFilter: "blur(20px)",
+            borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+            minHeight: "64px",
           }}
         >
-          {/* Header - ללא שינוי */}
-          <div style={{ textAlign: "center", marginBottom: "30px" }}>
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-              style={{
-                width: "70px",
-                height: "70px",
-                margin: "0 auto 15px",
-                borderRadius: "18px",
-                background: "linear-gradient(135deg, #a855f7, #3b82f6)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Target size={35} color="white" />
-            </motion.div>
-
-            <Title
-              level={2}
-              style={{
-                color: "#fff",
-                marginBottom: "8px",
-                fontWeight: 700,
-                fontSize: "1.8rem",
-                background: "linear-gradient(90deg, #a855f7, #3b82f6)",
-                backgroundClip: "text",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              הצטרף ל-InterviewAI Pro
-            </Title>
-            <Text
-              style={{
-                color: "rgba(255, 255, 255, 0.7)",
-                fontSize: "1rem",
-              }}
-            >
-              התחל את המסע שלך להצלחה בראיונות
-            </Text>
-          </div>
-
-          {/* Progress Steps - ללא שינוי */}
-          <div style={{ marginBottom: "30px" }}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "15px",
-              }}
-            >
-              {steps.map((step, index) => (
-                <div
-                  key={index}
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    flex: 1,
-                  }}
+          <Container maxWidth="xl">
+            <Toolbar sx={{ justifyContent: "space-between", py: 0.5, minHeight: "64px !important" }}>
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5 }}
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
                 >
                   <motion.div
-                    animate={{
-                      scale: index === currentStep ? 1.1 : 1,
-                      backgroundColor: index <= currentStep ? "#a855f7" : "rgba(255, 255, 255, 0.2)",
-                    }}
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
                     style={{
-                      width: "40px",
-                      height: "40px",
-                      borderRadius: "50%",
+                      width: "36px",
+                      height: "36px",
+                      borderRadius: "10px",
+                      background: "linear-gradient(135deg, #a855f7, #3b82f6)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      color: "#fff",
-                      marginBottom: "6px",
-                      transition: "all 0.3s ease",
                     }}
                   >
-                    {step.icon}
+                    <Sparkles size={20} color="white" />
                   </motion.div>
-                  <Text
-                    style={{
-                      color: index <= currentStep ? "#fff" : "rgba(255, 255, 255, 0.5)",
-                      fontSize: "0.8rem",
-                      fontWeight: 600,
-                      textAlign: "center",
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 700,
+                      background: "linear-gradient(90deg, #a855f7, #3b82f6)",
+                      backgroundClip: "text",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      mr: 2,
+                      fontSize: "1.3rem",
                     }}
                   >
-                    {step.title}
-                  </Text>
-                </div>
-              ))}
-            </div>
-            <Progress
-              percent={(currentStep / (steps.length - 1)) * 100}
-              showInfo={false}
-              strokeColor={{
-                "0%": "#a855f7",
-                "100%": "#3b82f6",
-              }}
-              style={{ marginBottom: "15px" }}
-            />
-          </div>
-
-          <Form layout="vertical" onFinish={handleRegister} size="large">
-            <AnimatePresence mode="wait">
-              {/* Step 1: Personal Info */}
-              {currentStep === 0 && (
-                <motion.div
-                  key="step1"
-                  initial={{ opacity: 0, x: 50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -50 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <Form.Item
-                    label={<Text style={{ color: "rgba(255, 255, 255, 0.8)", fontWeight: 600 }}>שם מלא</Text>}
-                    required
-                    validateStatus={username.trim() === "" ? "error" : ""}
-                    help={username.trim() === "" ? "שם מלא נדרש" : ""}
-                  >
-                    <Input
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      prefix={<User size={18} style={{ color: "#a855f7" }} />}
-                      placeholder="הכנס את השם המלא שלך"
-                      style={{
-                        height: "48px",
-                        borderRadius: "12px",
-                        background: "rgba(15, 23, 42, 0.6)",
-                        border: "1px solid rgba(99, 102, 241, 0.3)",
-                        color: "#fff",
-                        fontSize: "1rem",
-                      }}
-                    />
-                  </Form.Item>
-
-                  <Form.Item
-                    label={<Text style={{ color: "rgba(255, 255, 255, 0.8)", fontWeight: 600 }}>כתובת אימייל</Text>}
-                    required
-                    validateStatus={!/\S+@\S+\.\S+/.test(userEmail) && userEmail.trim() !== "" ? "error" : ""}
-                    help={!/\S+@\S+\.\S+/.test(userEmail) && userEmail.trim() !== "" ? "פורמט אימייל לא תקין" : ""}
-                  >
-                    <Input
-                      value={userEmail}
-                      onChange={(e) => setUserEmail(e.target.value)}
-                      prefix={<Mail size={18} style={{ color: "#a855f7" }} />}
-                      placeholder="הכנס את כתובת האימייל שלך"
-                      style={{
-                        height: "48px",
-                        borderRadius: "12px",
-                        background: "rgba(15, 23, 42, 0.6)",
-                        border: "1px solid rgba(99, 102, 241, 0.3)",
-                        color: "#fff",
-                        fontSize: "1rem",
-                      }}
-                    />
-                  </Form.Item>
+                    InterviewAI Pro
+                  </Typography>
                 </motion.div>
-              )}
 
-              {/* Step 2: Security */}
-              {currentStep === 1 && (
-                <motion.div
-                  key="step2"
-                  initial={{ opacity: 0, x: 50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -50 }}
-                  transition={{ duration: 0.3 }}
+                {/* Desktop Navigation */}
+                <Box sx={{ display: { xs: "none", md: "flex" } }}>
+                  <Button
+                    color="inherit"
+                    onClick={() => navigate("/home")}
+                    startIcon={<HomeIcon size={16} />}
+                    sx={navButtonStyle}
+                  >
+                    דשבורד
+                  </Button>
+                  <Button
+                    color="inherit"
+                    onClick={() => navigate("/upload-resume")}
+                    startIcon={<FileText size={16} />}
+                    sx={navButtonStyle}
+                  >
+                    קורות חיים
+                  </Button>
+                  <Button
+                    color="inherit"
+                    onClick={() => navigate("/interview")}
+                    startIcon={<Play size={16} />}
+                    sx={navButtonStyle}
+                  >
+                    ראיון
+                  </Button>
+                  <Button
+                    color="inherit"
+                    onClick={() => navigate("/report")}
+                    startIcon={<BarChart2 size={16} />}
+                    sx={navButtonStyle}
+                  >
+                    דוחות
+                  </Button>
+                </Box>
+              </Box>
+
+              {/* Right Side Actions */}
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                {/* Search Button */}
+                <IconButton
+                  sx={{
+                    color: "#fff",
+                    background: "rgba(255, 255, 255, 0.05)",
+                    "&:hover": { background: "rgba(255, 255, 255, 0.1)" },
+                    display: { xs: "none", md: "flex" },
+                    width: 36,
+                    height: 36,
+                  }}
                 >
-                  <Form.Item
-                    label={<Text style={{ color: "rgba(255, 255, 255, 0.8)", fontWeight: 600 }}>סיסמא</Text>}
-                    required
-                    validateStatus={password.length < 8 && password.trim() !== "" ? "error" : ""}
-                    help={password.length < 8 && password.trim() !== "" ? "הסיסמא חייבת להיות לפחות 8 תווים" : ""}
-                  >
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      prefix={<Lock size={18} style={{ color: "#a855f7" }} />}
-                      suffix={
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          style={{
-                            background: "none",
-                            border: "none",
-                            color: "rgba(255, 255, 255, 0.5)",
-                            cursor: "pointer",
-                            padding: "4px",
-                          }}
-                        >
-                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </button>
-                      }
-                      placeholder="צור סיסמא חזקה"
-                      style={{
-                        height: "48px",
-                        borderRadius: "12px",
-                        background: "rgba(15, 23, 42, 0.6)",
-                        border: "1px solid rgba(99, 102, 241, 0.3)",
-                        color: "#fff",
-                        fontSize: "1rem",
-                      }}
-                    />
-                    {password && (
-                      <div style={{ marginTop: "8px" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-                          <Text style={{ color: "rgba(255, 255, 255, 0.7)", fontSize: "0.9rem" }}>חוזק הסיסמא</Text>
-                          <Text style={{ color: getStrengthColor(), fontSize: "0.9rem", fontWeight: 600 }}>
-                            {passwordStrength < 50 ? "חלשה" : passwordStrength < 75 ? "טובה" : "חזקה"}
-                          </Text>
-                        </div>
-                        <Progress
-                          percent={passwordStrength}
-                          showInfo={false}
-                          strokeColor={getStrengthColor()}
-                          size="small"
-                        />
-                      </div>
-                    )}
-                  </Form.Item>
+                  <Search size={18} />
+                </IconButton>
 
-                  <Form.Item
-                    label={<Text style={{ color: "rgba(255, 255, 255, 0.8)", fontWeight: 600 }}>אישור סיסמא</Text>}
-                    required
-                    validateStatus={confirmPassword && password !== confirmPassword ? "error" : ""}
-                    help={confirmPassword && password !== confirmPassword ? "הסיסמאות אינן תואמות" : ""}
-                  >
-                    <Input
-                      type={showConfirmPassword ? "text" : "password"}
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      prefix={<Lock size={18} style={{ color: "#a855f7" }} />}
-                      suffix={
-                        <button
-                          type="button"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          style={{
-                            background: "none",
-                            border: "none",
-                            color: "rgba(255, 255, 255, 0.5)",
-                            cursor: "pointer",
-                            padding: "4px",
-                          }}
-                        >
-                          {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </button>
-                      }
-                      placeholder="אשר את הסיסמא שלך"
-                      style={{
-                        height: "48px",
-                        borderRadius: "12px",
-                        background: "rgba(15, 23, 42, 0.6)",
-                        border: `1px solid ${
-                          confirmPassword && password !== confirmPassword ? "#ef4444" : "rgba(99, 102, 241, 0.3)"
-                        }`,
-                        color: "#fff",
-                        fontSize: "1rem",
-                      }}
-                    />
-                  </Form.Item>
-                </motion.div>
-              )}
-
-              {/* Step 3: Resume Upload */}
-              {currentStep === 2 && (
-                <motion.div
-                  key="step3"
-                  initial={{ opacity: 0, x: 50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -50 }}
-                  transition={{ duration: 0.3 }}
+                {/* Notifications */}
+                <IconButton
+                  sx={{
+                    color: "#fff",
+                    background: "rgba(255, 255, 255, 0.05)",
+                    "&:hover": { background: "rgba(255, 255, 255, 0.1)" },
+                    position: "relative",
+                    display: { xs: "none", md: "flex" },
+                    width: 36,
+                    height: 36,
+                  }}
                 >
-                  <Form.Item
-                    label={<Text style={{ color: "rgba(255, 255, 255, 0.8)", fontWeight: 600 }}>העלאת קורות חיים</Text>}
-                    required
-                    validateStatus={!file ? "error" : ""}
-                    help={!file ? "יש להעלות קורות חיים" : ""}
-                  >
-                    <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
-                      <Upload.Dragger
-                        beforeUpload={(file: File) => {
-                          setFile(file)
-                          return false
-                        }}
-                        showUploadList={false}
-                        style={{
-                          background: "rgba(15, 23, 42, 0.6)",
-                          border: "1px dashed rgba(99, 102, 241, 0.3)",
-                          borderRadius: "12px",
-                          padding: "25px",
-                        }}
-                      >
-                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                          {file ? (
-                            <motion.div
-                              initial={{ scale: 0.8 }}
-                              animate={{ scale: 1 }}
-                              style={{
-                                width: "70px",
-                                height: "70px",
-                                borderRadius: "18px",
-                                background: "rgba(16, 185, 129, 0.2)",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                marginBottom: "12px",
-                                position: "relative",
-                              }}
-                            >
-                              <FileText size={35} style={{ color: "#10b981" }} />
-                              <div
-                                style={{
-                                  position: "absolute",
-                                  top: "-6px",
-                                  right: "-6px",
-                                  width: "20px",
-                                  height: "20px",
-                                  borderRadius: "50%",
-                                  background: "#10b981",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                }}
-                              >
-                                <CheckCircle size={12} color="white" />
-                              </div>
-                            </motion.div>
-                          ) : (
-                            <div
-                              style={{
-                                width: "70px",
-                                height: "70px",
-                                borderRadius: "18px",
-                                background: "rgba(99, 102, 241, 0.2)",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                marginBottom: "12px",
-                              }}
-                            >
-                              <UploadCloud size={35} style={{ color: "#a855f7" }} />
-                            </div>
-                          )}
-
-                          <Text
-                            style={{
-                              color: "#fff",
-                              fontSize: "1.1rem",
-                              fontWeight: 600,
-                              marginBottom: "6px",
-                            }}
-                          >
-                            {file ? file.name : "גרור את קורות החיים כאן"}
-                          </Text>
-                          <Text style={{ color: "rgba(255, 255, 255, 0.6)" }}>
-                            {file ? "הקובץ מוכן להעלאה" : "תומך בפורמטים PDF, DOCX, TXT"}
-                          </Text>
-                        </div>
-                      </Upload.Dragger>
-                    </motion.div>
-                  </Form.Item>
-
-                  <Form.Item
-                    name="agreement"
-                    valuePropName="checked"
-                    rules={[{ validator: (_, value) => value ? Promise.resolve() : Promise.reject('חובה לאשר את התנאים') }]}
-                  >
-                    <Checkbox
-                      checked={agreedToTerms}
-                      onChange={(e) => setAgreedToTerms(e.target.checked)}
-                      style={{ color: "rgba(255, 255, 255, 0.7)" }}
+                  <Bell size={18} />
+                  {notificationCount > 0 && (
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        top: 2,
+                        right: 2,
+                        width: 14,
+                        height: 14,
+                        borderRadius: "50%",
+                        background: "linear-gradient(135deg, #ef4444, #dc2626)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "0.6rem",
+                        fontWeight: 600,
+                        color: "#fff",
+                      }}
                     >
-                      <Text style={{ color: "rgba(255, 255, 255, 0.7)" }}>
-                        אני מסכים ל<a style={{ color: "#a855f7", fontWeight: 600 }}>תנאי השימוש</a> ול
-                        <a style={{ color: "#a855f7", fontWeight: 600 }}>מדיניות הפרטיות</a>
-                      </Text>
-                    </Checkbox>
-                  </Form.Item>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                      {notificationCount}
+                    </Box>
+                  )}
+                </IconButton>
 
-            {/* Navigation Buttons */}
-            <div
-              style={{
-                display: "flex",
-                gap: "12px",
-                marginTop: "25px",
+                {/* Mobile Menu Button */}
+                <Box sx={{ display: { xs: "flex", md: "none" } }}>
+                  <IconButton
+                    color="inherit"
+                    onClick={handleMobileMenuToggle}
+                    sx={{
+                      color: "#fff",
+                      background: "rgba(255, 255, 255, 0.05)",
+                      "&:hover": { background: "rgba(255, 255, 255, 0.1)" },
+                      width: 36,
+                      height: 36,
+                    }}
+                  >
+                    <MenuIcon size={20} />
+                  </IconButton>
+                </Box>
+
+                {/* User Menu */}
+                <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center" }}>
+                  <Button
+                    onClick={handleMenuOpen}
+                    sx={{
+                      color: "#fff",
+                      textTransform: "none",
+                      display: "flex",
+                      alignItems: "center",
+                      background: "rgba(255, 255, 255, 0.05)",
+                      borderRadius: "10px",
+                      px: 1.5,
+                      py: 0.5,
+                      "&:hover": {
+                        background: "rgba(255, 255, 255, 0.1)",
+                        transform: "translateY(-2px)",
+                      },
+                      transition: "all 0.3s ease",
+                      minWidth: "auto",
+                    }}
+                  >
+                    <Avatar
+                      sx={{
+                        width: 28,
+                        height: 28,
+                        background: "linear-gradient(135deg, #a855f7, #3b82f6)",
+                        mr: 0.5,
+                        fontSize: "0.8rem",
+                        fontWeight: 600,
+                      }}
+                    >
+                      <User size={14} />
+                    </Avatar>
+                    <Typography sx={{ ml: 0.5, mr: 0.5, fontWeight: 500, fontSize: "0.9rem" }}>חשבון</Typography>
+                    <ChevronDown size={14} />
+                  </Button>
+                  <Menu
+                    anchorEl={anchorEl}
+                    open={Boolean(anchorEl)}
+                    onClose={handleMenuClose}
+                    PaperProps={{
+                      sx: {
+                        mt: 1,
+                        background: "rgba(30, 41, 59, 0.95)",
+                        backdropFilter: "blur(20px)",
+                        border: "1px solid rgba(255, 255, 255, 0.1)",
+                        borderRadius: "12px",
+                        boxShadow: "0 20px 60px rgba(0, 0, 0, 0.4)",
+                        color: "#fff",
+                        minWidth: "180px",
+                        overflow: "hidden",
+                      },
+                    }}
+                  >
+                    <MenuItem
+                      onClick={() => {
+                        handleMenuClose();
+                        navigate("/home");
+                      }}
+                      sx={{
+                        py: 1,
+                        px: 2,
+                        "&:hover": { background: "rgba(168, 85, 247, 0.1)" },
+                        transition: "all 0.2s ease",
+                        fontSize: "0.9rem",
+                      }}
+                    >
+                      <User size={14} style={{ marginRight: "8px" }} />
+                      פרופיל
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => {
+                        handleMenuClose();
+                      }}
+                      sx={{
+                        py: 1,
+                        px: 2,
+                        "&:hover": { background: "rgba(168, 85, 247, 0.1)" },
+                        transition: "all 0.2s ease",
+                        fontSize: "0.9rem",
+                      }}
+                    >
+                      <Settings size={14} style={{ marginRight: "8px" }} />
+                      הגדרות
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => {
+                        handleMenuClose();
+                        handleLogout();
+                      }}
+                      sx={{
+                        py: 1,
+                        px: 2,
+                        color: "#f87171",
+                        "&:hover": { background: "rgba(239, 68, 68, 0.1)" },
+                        transition: "all 0.2s ease",
+                        fontSize: "0.9rem",
+                      }}
+                    >
+                      <LogOut size={14} style={{ marginRight: "8px" }} />
+                      יציאה
+                    </MenuItem>
+                  </Menu>
+                </Box>
+              </Box>
+            </Toolbar>
+          </Container>
+        </AppBar>
+      )}
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {token && mobileMenuOpen && !isAuthPage && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Box
+              sx={{
+                background: "rgba(15, 23, 42, 0.95)",
+                backdropFilter: "blur(20px)",
+                borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+                py: 1,
+                px: 2,
               }}
             >
-              {/* כפתור "הקודם" - מוצג רק אם אנחנו לא בשלב הראשון ואין כפתור התחברות מוצג */}
-              {currentStep > 0 && !registrationSuccessDisplayed && (
-                <Button
-                  onClick={prevStep}
-                  style={{
-                    height: "48px",
-                    flex: 1,
-                    borderRadius: "12px",
-                    background: "rgba(255, 255, 255, 0.1)",
-                    border: "1px solid rgba(255, 255, 255, 0.2)",
-                    color: "#fff",
-                    fontSize: "1rem",
-                    fontWeight: 600,
-                  }}
-                >
-                  הקודם
-                </Button>
-              )}
+              <Button
+                fullWidth
+                color="inherit"
+                onClick={() => {
+                  navigate("/home");
+                  setMobileMenuOpen(false);
+                }}
+                startIcon={<HomeIcon size={16} />}
+                sx={{
+                  ...navButtonStyle,
+                  justifyContent: "flex-start",
+                  my: 0.5,
+                  mx: 0,
+                }}
+              >
+                דשבורד
+              </Button>
+              <Button
+                fullWidth
+                color="inherit"
+                onClick={() => {
+                  navigate("/upload-resume");
+                  setMobileMenuOpen(false);
+                }}
+                startIcon={<FileText size={16} />}
+                sx={{
+                  ...navButtonStyle,
+                  justifyContent: "flex-start",
+                  my: 0.5,
+                  mx: 0,
+                }}
+              >
+                קורות חיים
+              </Button>
+              <Button
+                fullWidth
+                color="inherit"
+                onClick={() => {
+                  navigate("/interview");
+                  setMobileMenuOpen(false);
+                }}
+                startIcon={<Play size={16} />}
+                sx={{
+                  ...navButtonStyle,
+                  justifyContent: "flex-start",
+                  my: 0.5,
+                  mx: 0,
+                }}
+              >
+                ראיון
+              </Button>
+              <Button
+                fullWidth
+                color="inherit"
+                onClick={() => {
+                  navigate("/report");
+                  setMobileMenuOpen(false);
+                }}
+                startIcon={<BarChart2 size={16} />}
+                sx={{
+                  ...navButtonStyle,
+                  justifyContent: "flex-start",
+                  my: 0.5,
+                  mx: 0,
+                }}
+              >
+                דוחות
+              </Button>
+              <Button
+                fullWidth
+                color="inherit"
+                onClick={() => {
+                  handleLogout();
+                  setMobileMenuOpen(false);
+                }}
+                startIcon={<LogOut size={16} />}
+                sx={{
+                  ...navButtonStyle,
+                  justifyContent: "flex-start",
+                  my: 0.5,
+                  mx: 0,
+                  color: "#f87171",
+                }}
+              >
+                יציאה
+              </Button>
+            </Box>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-              {/* כפתור "הבא" או "צור חשבון" - מוצג רק אם אין כפתור התחברות מוצג */}
-              {!registrationSuccessDisplayed ? (
-                currentStep < steps.length - 1 ? (
-                  <Button
-                    onClick={nextStep}
-                    disabled={!isCurrentStepValid()}
-                    style={{
-                      height: "48px",
-                      flex: 1,
-                      borderRadius: "12px",
-                      background: "linear-gradient(90deg, #a855f7, #3b82f6)",
-                      border: "none",
-                      color: "#fff",
-                      fontSize: "1rem",
-                      fontWeight: 600,
-                    }}
-                  >
-                    הבא
-                  </Button>
-                ) : (
-                  <motion.div style={{ flex: 1 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <Button
-                      type="primary"
-                      htmlType="submit"
-                      loading={loading}
-                      disabled={!isCurrentStepValid() || loading}
-                      style={{
-                        height: "48px",
-                        width: "100%",
-                        borderRadius: "12px",
-                        background: loading
-                          ? "linear-gradient(90deg, #6366f1, #8b5cf6)"
-                          : "linear-gradient(90deg, #a855f7, #3b82f6)",
-                        border: "none",
-                        fontSize: "1rem",
-                        fontWeight: 700,
-                        boxShadow: "0 10px 30px rgba(168, 85, 247, 0.3)",
-                      }}
-                    >
-                      {loading ? (
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                          <motion.div
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-                            style={{
-                              width: "18px",
-                              height: "18px",
-                              border: "2px solid rgba(255, 255, 255, 0.3)",
-                              borderTop: "2px solid #fff",
-                              borderRadius: "50%",
-                            }}
-                          />
-                          יוצר את החשבון שלך...
-                        </div>
-                      ) : (
-                        "צור חשבון"
-                      )}
-                    </Button>
-                  </motion.div>
-                )
-              ) : (
-                // הצג כפתור "עבור להתחברות" רק אם registrationSuccessDisplayed הוא true
-                <motion.div style={{ flex: 1 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button
-                    type="primary"
-                    onClick={() => navigate("/login")} // ניווט ללוגין בלחיצה
-                    style={{
-                      height: "48px",
-                      width: "100%",
-                      borderRadius: "12px",
-                      background: "linear-gradient(90deg, #3b82f6, #a855f7)", // צבע אחר לכפתור התחברות
-                      border: "none",
-                      fontSize: "1rem",
-                      fontWeight: 700,
-                      boxShadow: "0 10px 30px rgba(59, 130, 246, 0.3)",
-                    }}
-                  >
-                    עבור להתחברות
-                  </Button>
-                </motion.div>
-              )}
-            </div>
+      <Box
+        sx={{
+          flexGrow: 1,
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <Routes>
+          {/* ניתוב ראשי - אם אין טוקן, מעבר ללוגין. אם יש, מעבר ל-home */}
+          <Route path="/" element={token ? <Navigate to="/home" /> : <Navigate to="/login" />} />
 
-            <div style={{ textAlign: "center", marginTop: "20px" }}>
-              <Text style={{ color: "rgba(255, 255, 255, 0.7)" }}>
-                כבר יש לך חשבון?{" "}
-                <motion.a
-                  whileHover={{ scale: 1.05 }}
-                  onClick={() => navigate("/login")} // שימוש ב-navigate לניווט חלקה
-                  style={{
-                    color: "#a855f7",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    textDecoration: "none",
-                  }}
-                >
-                  התחבר
-                </motion.a>
-              </Text>
-            </div>
-          </Form>
-        </Card>
-      </motion.div>
-    </div>
+          {/* עמודי אימות */}
+          {/* LoginForm: אם אין טוקן, הצג את טופס הלוגין, אחרת נווט ל-home */}
+          <Route path="/login" element={!token ? <LoginForm onLogin={handleLogin} /> : <Navigate to="/home" />} />
+          {/* RegisterForm: אם אין טוקן, הצג את טופס הרישום, אחרת נווט ל-home.
+             אין צורך להעביר onRegisterSuccess כי הניווט הוא עכשיו כפתור ידני בתוך הרכיב. */}
+          <Route
+            path="/register"
+            element={!token ? <RegisterForm /> : <Navigate to="/home" />}
+          />
+
+          {/* עמודים מוגנים - דורשים טוקן. אם אין, נווט ללוגין */}
+          <Route path="/home" element={token ? <Home onLogout={handleLogout} /> : <Navigate to="/login" />} />
+          <Route path="/upload-resume" element={token ? <UploadResume /> : <Navigate to="/login" />} />
+          <Route path="/interview" element={token ? <InterviewPage /> : <Navigate to="/login" />} />
+          <Route path="/report" element={token ? <Report /> : <Navigate to="/login" />} />
+        </Routes>
+      </Box>
+    </Box>
   )
 }
 
-export default RegisterForm;
+export default App
