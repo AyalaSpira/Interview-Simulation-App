@@ -72,8 +72,11 @@ type RegisterFormProps = {
     try {
       const response = await registerUser(username, userEmail, password, file)
       if (response.token) {
+        console.log("עובר ל-login...");
+
         message.success("🎉 ברוך הבא ל-InterviewAI Pro! מעביר לעמוד ההתחברות...")
         setTimeout(() => {
+          console.log("עובר ל-login...");
           onRegisterSuccess()
           navigate("/login") // מעבר ללוגין אחרי הרשמה מוצלחת
         }, 1500)
