@@ -42,26 +42,22 @@ const App = () => {
   const location = useLocation()
 useEffect(() => {
   const savedToken = localStorage.getItem("token")
+
+  // נוודא שאנו קוראים מתוך localStorage לפני כל ניתוב
   setToken(savedToken)
   setIsTokenChecked(true)
 }, [])
 
-  // ניהול טוקן ב-localStorage
-  useEffect(() => {
-    if (token) {
-      localStorage.setItem("token", token)
-    } else {
-      localStorage.removeItem("token")
-    }
-  }, [token])
+
 
   // ניתוב אוטומטי לעמוד הלוגין בכניסה ראשונה או אם אין טוקן ב-root path
- useEffect(() => {
-  if (isTokenChecked && !token && location.pathname === "/") {
+
+useEffect(() => {
+  if (!isTokenChecked) return
+  if (!token && location.pathname !== "/login" && location.pathname !== "/register") {
     navigate("/login")
   }
-}, [isTokenChecked, token, location.pathname])
-
+}, [isTokenChecked, token])
 
   // פונקציית התחברות
   const handleLogin = (newToken: string) => {
@@ -110,6 +106,7 @@ useEffect(() => {
       boxShadow: "0 4px 12px rgba(168, 85, 247, 0.3)",
     },
   }
+if (!isTokenChecked) return null
 
   return (
     <Box
@@ -506,26 +503,37 @@ useEffect(() => {
           flexDirection: "column",
         }}
       >
-        <Routes>
-          {/* ניתוב ראשי - אם אין טוקן, מעבר ללוגין. אם יש, מעבר ל-home */}
-          <Route path="/" element={token ? <Navigate to="/home" /> : <Navigate to="/login" />} />
+     <Routes>
+  <Route
+    path="/"
+    element={<Navigate to={token ? "/home" : "/login"} />}
+  />
+  <Route
+    path="/login"
+    element={!token ? <LoginForm onLogin={handleLogin} /> : <Navigate to="/home" />}
+  />
+  <Route
+    path="/register"
+    element={!token ? <RegisterForm /> : <Navigate to="/home" />}
+  />
+  <Route
+    path="/home"
+    element={token ? <Home onLogout={handleLogout} /> : <Navigate to="/login" />}
+  />
+  <Route
+    path="/upload-resume"
+    element={token ? <UploadResume /> : <Navigate to="/login" />}
+  />
+  <Route
+    path="/interview"
+    element={token ? <InterviewPage /> : <Navigate to="/login" />}
+  />
+  <Route
+    path="/report"
+    element={token ? <Report /> : <Navigate to="/login" />}
+  />
+</Routes>
 
-          {/* עמודי אימות */}
-          {/* LoginForm: אם אין טוקן, הצג את טופס הלוגין, אחרת נווט ל-home */}
-          <Route path="/login" element={!token ? <LoginForm onLogin={handleLogin} /> : <Navigate to="/home" />} />
-          {/* RegisterForm: אם אין טוקן, הצג את טופס הרישום, אחרת נווט ל-home.
-             אין צורך להעביר onRegisterSuccess כי הניווט הוא עכשיו כפתור ידני בתוך הרכיב. */}
-          <Route
-            path="/register"
-            element={!token ? <RegisterForm /> : <Navigate to="/home" />}
-          />
-
-          {/* עמודים מוגנים - דורשים טוקן. אם אין, נווט ללוגין */}
-          <Route path="/home" element={token ? <Home onLogout={handleLogout} /> : <Navigate to="/login" />} />
-          <Route path="/upload-resume" element={token ? <UploadResume /> : <Navigate to="/login" />} />
-          <Route path="/interview" element={token ? <InterviewPage /> : <Navigate to="/login" />} />
-          <Route path="/report" element={token ? <Report /> : <Navigate to="/login" />} />
-        </Routes>
       </Box>
     </Box>
   )

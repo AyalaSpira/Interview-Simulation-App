@@ -86,7 +86,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ /* onRegisterSuccess */ }) 
 
       // ננסה לבצע התחברות אוטומטית רק כדי לשמור את הטוקן ב-localStorage
       // (אם שירות authService עושה זאת). אין ניווט אוטומטי מכאן.
-      const loginResponse = await loginUser(userEmail, password);
+    /*  const loginResponse = await loginUser(userEmail, password);
       console.log("Automatic login attempt response (for token storage):", loginResponse);
 
       if (loginResponse.token) {
@@ -94,7 +94,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ /* onRegisterSuccess */ }) 
       } else {
         console.warn("התחברות אוטומטית פנימית נכשלה, אך ההרשמה הצליחה.");
       }
-
+*/
       // לאחר שהרשמה (וניסיון שמירת טוקן) הסתיימו, נציג את כפתור ההתחברות
       setRegistrationSuccessDisplayed(true);
 
