@@ -121,19 +121,33 @@ export const sendInterviewReport = async (interviewId: number) => {
         "Content-Type": "application/json",
       },
     });
+  const contentType = response.headers.get("content-type"); // שורה חדשה: בודק את סוג התוכן של התגובה
+      let responseData; // שורה חדשה: משתנה לאחסון הנתונים מהתגובה
 
-    console.log("Response from server while sending report:", response); // לוג תגובה מהשרת
-
-    if (!response.ok) {
-      throw new Error("Failed to send interview report.");
+      if (!response.ok) { // טיפול בשגיאות מהשרת (סטטוס שאינו 2xx)
+        let errorMessage = `Server error: ${response.status} ${response.statusText}`;
+        if (contentType && contentType.includes("application/json")) {
+          const errorJson = await response.json();
+          errorMessage = errorJson.message || errorJson.error || errorMessage;
+        } else {
+          const errorText = await response.text();
+          errorMessage = errorText || errorMessage;
+        }
+        console.error("Error response from server:", errorMessage);
+        throw new Error(`Failed to send interview report: ${errorMessage}`);
+      } else { // טיפול בתגובות הצלחה (סטטוס 2xx)
+        if (contentType && contentType.includes("application/json")) {
+          // אם השרת החזיר JSON (מומלץ שה-backend יחזיר כך)
+          responseData = await response.json();
+        } else {
+          // אם השרת עדיין שולח טקסט פשוט (המצב הנוכחי אצלך ב-backend)
+          responseData = await response.text(); // שורה שקוראת את התגובה כטקסט פשוט במקום JSON
+        }
+        console.log("Report sent successfully. Server response:", responseData);
+        return responseData; // החזר את התגובה
+      }
+    } catch (error: any) { // טיפול בשגיאות רשת או אחרות
+      console.error("Error sending interview report:", error);
+      throw error;
     }
-
-    const jsonResponse = await response.json();
-    console.log("Server response after sending report:", jsonResponse);
-
-    return jsonResponse;
-  } catch (error) {
-    console.error("Error sending interview report:", error);
-    throw error;
   }
-};
