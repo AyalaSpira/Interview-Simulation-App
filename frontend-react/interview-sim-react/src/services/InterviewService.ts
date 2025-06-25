@@ -134,7 +134,6 @@ export const sendInterviewReport = async (interviewId: number) => {
           errorMessage = errorText || errorMessage;
         }
         console.error("Error response from server:", errorMessage);
-        throw new Error(`Failed to send interview report: ${errorMessage}`);
       } else { // טיפול בתגובות הצלחה (סטטוס 2xx)
         if (contentType && contentType.includes("application/json")) {
           // אם השרת החזיר JSON (מומלץ שה-backend יחזיר כך)
