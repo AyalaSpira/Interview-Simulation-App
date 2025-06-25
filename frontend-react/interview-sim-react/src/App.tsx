@@ -36,8 +36,15 @@ const App = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [notificationCount, setNotificationCount] = useState(3)
+  const [isTokenChecked, setIsTokenChecked] = useState(false)
+
   const navigate = useNavigate()
   const location = useLocation()
+useEffect(() => {
+  const savedToken = localStorage.getItem("token")
+  setToken(savedToken)
+  setIsTokenChecked(true)
+}, [])
 
   // ניהול טוקן ב-localStorage
   useEffect(() => {
@@ -49,11 +56,12 @@ const App = () => {
   }, [token])
 
   // ניתוב אוטומטי לעמוד הלוגין בכניסה ראשונה או אם אין טוקן ב-root path
-  useEffect(() => {
-    if (!token && location.pathname === "/") {
-      navigate("/login")
-    }
-  }, [token, location.pathname, navigate]) // הוספנו navigate כתלות כדי למנוע אזהרות Lint, למרות שהוא יציב
+ useEffect(() => {
+  if (isTokenChecked && !token && location.pathname === "/") {
+    navigate("/login")
+  }
+}, [isTokenChecked, token, location.pathname])
+
 
   // פונקציית התחברות
   const handleLogin = (newToken: string) => {
@@ -524,3 +532,8 @@ const App = () => {
 }
 
 export default App
+
+
+/*
+
+*/
