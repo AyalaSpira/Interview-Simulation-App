@@ -94,8 +94,8 @@ Resume Text:
         //GenerateQuestionsFromAI-שולחת לבינה 2 פרומט אחת אישי ואחת מקצועי
         public async Task<List<string>> GenerateQuestionsAsync(string category, int numberOfQuestions = 5)
         {
-            var personalPrompt = $"Generate 2 personal interview questions for a {category} job. Do not add any introduction or explanations. Separate each question with a comma. Limit each question to a maximum of 3 sentences.";
-            var technicalPrompt = $"Generate 2 technical interview questions for a {category} job. Do not add any introduction or explanations. Separate each question with a comma. Limit each question to a maximum of 3 sentences.";
+            var personalPrompt = $"Generate 2 personal interview questions for a {category} job. Do not add any introduction or explanations. Separate each question with a comma. Limit each question to a maximum of 3 sentences. in English";
+            var technicalPrompt = $"Generate 2 technical interview questions for a {category} job. Do not add any introduction or explanations. Separate each question with a comma. Limit each question to a maximum of 3 sentences.in English";
 
             var personalQuestions = await GenerateQuestionsFromAI(personalPrompt);
             var technicalQuestions = await GenerateQuestionsFromAI(technicalPrompt);
