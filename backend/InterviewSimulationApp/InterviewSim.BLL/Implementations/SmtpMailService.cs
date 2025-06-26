@@ -49,7 +49,8 @@ namespace InterviewSim.BLL.Services
                 Body = body,
                 IsBodyHtml = true
             };
-
+            Console.WriteLine("----------mail-------------");
+            Console.WriteLine("to mail: "+ toEmail);
             mailMessage.To.Add(toEmail);
 
             // הוספת הקובץ כקובץ מצורף

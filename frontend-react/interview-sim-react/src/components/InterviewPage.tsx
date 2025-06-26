@@ -95,14 +95,18 @@ const InterviewPage: React.FC = () => {
   }
 
   const submitAllAnswers = async () => {
+    
     if (userId && answers.length > 0) {
       try {
+
         const interview = await submitAnswers(userId, answers)
         setInterviewId(interview.interviewId)
       } catch (error) {
         alert("Error submitting answers.")
       }
     }
+
+
   }
 
   const handleDownloadReport = async () => {
