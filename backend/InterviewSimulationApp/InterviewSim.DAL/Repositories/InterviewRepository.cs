@@ -101,37 +101,45 @@ public class InterviewRepository : IInterviewRepository
         Console.WriteLine("NEW Status: " + interview.Status);
 
         // השוואה - האם באמת יש שינוי
-        bool isAnswersChanged = string.Join("||", existingInterview.Answers) != string.Join("||", interview.Answers);
-        bool isSummaryChanged = existingInterview.Summary != interview.Summary;
-        bool isStatusChanged = existingInterview.Status != interview.Status;
+        //bool isAnswersChanged = string.Join("||", existingInterview.Answers) != string.Join("||", interview.Answers);
+        //bool isSummaryChanged = existingInterview.Summary != interview.Summary;
+        //bool isStatusChanged = existingInterview.Status != interview.Status;
 
-        if (!isAnswersChanged && !isSummaryChanged && !isStatusChanged)
-        {
-            Console.WriteLine("❗ No changes detected. Skipping update.");
-            return;
-        }
+        //if (!isAnswersChanged && !isSummaryChanged && !isStatusChanged)
+        //{
+        //    Console.WriteLine("❗ No changes detected. Skipping update.");
+        //    return;
+        //}
 
-        // FORCE UPDATE - לרוקן קודם כדי לוודא שינוי
-        if (isAnswersChanged)
-        {
-            _context.Entry(existingInterview).Property(e => e.Answers).CurrentValue = null;
-            await _context.SaveChangesAsync(); // שלב ביניים כדי לאפס
-            existingInterview.Answers = new List<string>(interview.Answers);
-            _context.Entry(existingInterview).Property(e => e.Answers).IsModified = true;
-        }
+        //// FORCE UPDATE - לרוקן קודם כדי לוודא שינוי
+        //if (isAnswersChanged)
+        //{
+        //    _context.Entry(existingInterview).Property(e => e.Answers).CurrentValue = null;
+        //    await _context.SaveChangesAsync(); // שלב ביניים כדי לאפס
+        //    existingInterview.Answers = new List<string>(interview.Answers);
+        //    _context.Entry(existingInterview).Property(e => e.Answers).IsModified = true;
+        //}
 
-        if (isSummaryChanged)
-        {
-            existingInterview.Summary = interview.Summary;
-            _context.Entry(existingInterview).Property(e => e.Summary).IsModified = true;
-        }
+        //if (isSummaryChanged)
+        //{
+        //    existingInterview.Summary = interview.Summary;
+        //    _context.Entry(existingInterview).Property(e => e.Summary).IsModified = true;
+        //}
 
-        if (isStatusChanged)
-        {
-            existingInterview.Status = interview.Status;
+        //if (isStatusChanged)
+        //{
+        //    existingInterview.Status = interview.Status;
+        //    _context.Entry(existingInterview).Property(e => e.Status).IsModified = true;
+        //}
+
+        _context.Entry(existingInterview).Property(e => e.Answers).CurrentValue = null;
+        await _context.SaveChangesAsync(); // שלב ביניים כדי לאפס
+        existingInterview.Answers = new List<string>(interview.Answers);
+        _context.Entry(existingInterview).Property(e => e.Answers).IsModified = true;
+        existingInterview.Summary = interview.Summary;
+           _context.Entry(existingInterview).Property(e => e.Summary).IsModified = true;
+        existingInterview.Status = interview.Status;
             _context.Entry(existingInterview).Property(e => e.Status).IsModified = true;
-        }
-
         Console.WriteLine("Saving changes...");
         int affected = await _context.SaveChangesAsync();
         Console.WriteLine($"✅ Rows affected: {affected}");

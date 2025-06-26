@@ -109,6 +109,7 @@ namespace InterviewSim.API.Controllers
 
                 return Ok(new
                 {
+
                     InterviewId = interview.InterviewId,
                     Questions = interview.Questions,
                     Answers = interview.Answers,
@@ -128,11 +129,12 @@ namespace InterviewSim.API.Controllers
         {
             // שליפת הראיון מהמאגר
             var interview = await _interviewService.GetInterviewByIdAsync(interviewId);
+
             if (interview == null)
             {
                 return NotFound("Interview not found.");
             }
-
+            Console.WriteLine(interview.InterviewId);
             // יצירת מסמך PDF
             using (var memoryStream = new MemoryStream())
             {
