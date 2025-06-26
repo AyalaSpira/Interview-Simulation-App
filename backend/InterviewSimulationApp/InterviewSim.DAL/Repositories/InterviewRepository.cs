@@ -132,7 +132,7 @@ public class InterviewRepository : IInterviewRepository
         //    _context.Entry(existingInterview).Property(e => e.Status).IsModified = true;
         //}
 
-        _context.Entry(existingInterview).Property(e => e.Answers).CurrentValue = null;
+        //_context.Entry(existingInterview).Property(e => e.Answers).CurrentValue = null;
         await _context.SaveChangesAsync(); // שלב ביניים כדי לאפס
         existingInterview.Answers = new List<string>(interview.Answers);
         _context.Entry(existingInterview).Property(e => e.Answers).IsModified = true;
