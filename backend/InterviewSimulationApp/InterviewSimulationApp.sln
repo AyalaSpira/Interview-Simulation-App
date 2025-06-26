@@ -11,14 +11,25 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InterviewSim.DAL", "Intervi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InterviewSim.Shared", "InterviewSim.Shared\InterviewSim.Shared.csproj", "{040E6EDB-C16A-402C-9752-CA4532B855A8}"
 EndProject
+<<<<<<< HEAD
+=======
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+>>>>>>> c164051 (m)
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
+<<<<<<< HEAD
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
+=======
+>>>>>>> c164051 (m)
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{B5A4A038-413D-42E0-9DD5-AC37DF74FD31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B5A4A038-413D-42E0-9DD5-AC37DF74FD31}.Debug|Any CPU.Build.0 = Debug|Any CPU
@@ -37,4 +48,10 @@ Global
 		{040E6EDB-C16A-402C-9752-CA4532B855A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{040E6EDB-C16A-402C-9752-CA4532B855A8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
+<<<<<<< HEAD
+=======
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+>>>>>>> c164051 (m)
 EndGlobal
