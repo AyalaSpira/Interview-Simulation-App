@@ -64,33 +64,33 @@ namespace InterviewSim.BLL.Implementations
             return interview;
         }
 
-        public async Task<Interview> SubmitAnswersAsync(int interviewId, List<string> answers)
+        public async Task<Interview> SubmitAnswersAsync(int userId, List<string> answers)
         {
-            Console.WriteLine($"SubmitAnswersAsync started for interviewId: {interviewId}");
+            Console.WriteLine($"SubmitAnswersAsync started for interviewId: ");
 
-            var interview = await _interviewRepository.GetInterviewByIdAsync(interviewId);
+            var interview = await _interviewRepository.GetLastInterviewByUserIdAsync(userId);
             if (interview == null)
             {
-                Console.WriteLine($"Interview not found for interviewId: {interviewId}");
+                //Console.WriteLine($"Interview not found for interviewId: {interviewId}");
                 throw new Exception("Interview not found");
             }
             Console.WriteLine($"Interview found: {interview.InterviewId}");
 
-            Console.WriteLine($"Saving answers for interviewId: {interviewId}");
+            //Console.WriteLine($"Saving answers for interviewId: {interviewId}");
 
-            var questions = await _interviewRepository.GetInterviewQuestionsAsync(interviewId);
+            var questions = await _interviewRepository.GetInterviewQuestionsAsync(interview.InterviewId);
             if (questions == null || !questions.Any())
             {
-                Console.WriteLine($"No questions found for interviewId: {interviewId}");
+                //Console.WriteLine($"No questions found for interviewId: {interviewId}");
                 throw new Exception("No questions found for the interview");
             }
-            Console.WriteLine($"Found {questions.Count} questions for interviewId: {interviewId}");
+            //Console.WriteLine($"Found {questions.Count} questions for interviewId: {interviewId}");
 
             Console.WriteLine("Starting AI analysis on answers");
             var summary = await _aiService.AnalyzeInterviewAsync(answers, questions);
             if (summary == null)
             {
-                Console.WriteLine($"Failed to analyze interview for interviewId: {interviewId}");
+                //Console.WriteLine($"Failed to analyze interview for interviewId: {interviewId}");
                 throw new Exception("Failed to analyze interview");
             }
             Console.WriteLine("AI analysis complete");
@@ -99,11 +99,11 @@ namespace InterviewSim.BLL.Implementations
             interview.Summary = summary;
             interview.Status = "Completed";
 
-            Console.WriteLine($"Updating interview details for interviewId: {interviewId}");
+            //Console.WriteLine($"Updating interview details for interviewId: {interviewId}");
             await _interviewRepository.UpdateInterviewAsync(interview);
-            Console.WriteLine($"Interview updated and status set to 'Completed' for interviewId: {interviewId}");
+            //Console.WriteLine($"Interview updated and status set to 'Completed' for interviewId: {interviewId}");
 
-            Console.WriteLine($"SubmitAnswersAsync completed for interviewId: {interviewId}");
+            //Console.WriteLine($"SubmitAnswersAsync completed for interviewId: {interviewId}");
             return interview;
         }
 
